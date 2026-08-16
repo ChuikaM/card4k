@@ -1,13 +1,16 @@
-import 'package:card4k/core/group_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:card4k/ui/util/widget.dart';
-import 'package:card4k/ui/dialog/card.dart';
 
-import 'package:card4k/core/group_provider.dart' as gp;
+import 'package:card4k/ui/view_models/groups_view_model.dart';
+
+import 'package:card4k/ui/widgets/dialog/card_dialog.dart';
+import 'package:card4k/ui/widgets/widget.dart';
+
+import 'package:card4k/data/models/card.dart' as c;
+import 'package:card4k/data/models/group.dart';
 
 class CardPage extends StatefulWidget {
-  final gp.GroupProvider groupProvider;
+  final GroupProvider groupProvider;
   final VoidCallback onGoBack;
 
   const CardPage({super.key, required this.groupProvider, required this.onGoBack});
@@ -26,7 +29,7 @@ class _CardPageState extends State<CardPage> {
   bool isCardShowing = true;
 
   int index = 0;
-  void _updateCardState(gp.Card card) {
+  void _updateCardState(c.Card card) {
     setState(() {
       title = card.title;
       description = card.description;
@@ -159,7 +162,7 @@ class _CardPageState extends State<CardPage> {
                                       ),
                                       Align(
                                         alignment: Alignment.center,
-                                        child: CardDialog(oldCard: gp.Card(title: title, description: description), cardDialogMode: CardDialogMode.edit, groupProvider: widget.groupProvider, focusNodeTitle: focusNodeTitle, focusNodeDescription: focusNodeDescription),
+                                        child: CardDialog(oldCard: c.Card(title: title, description: description), cardDialogMode: CardDialogMode.edit, groupProvider: widget.groupProvider, focusNodeTitle: focusNodeTitle, focusNodeDescription: focusNodeDescription),
                                       ),
                                     ],
                                   )

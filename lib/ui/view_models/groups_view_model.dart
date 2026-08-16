@@ -1,41 +1,11 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
-import 'package:card4k/core/settings_manager.dart';
 
-class Card {
-  final String title;
-  final String description;
-
-  Card({required this.title, required this.description});
-  Card.fromMap(Map<String, dynamic> map)
-      : title = map['title'] ?? '',
-        description = map['description'] ?? '';
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Card && runtimeType == other.runtimeType && title == other.title && description == other.description;
-
-  @override
-  int get hashCode => title.hashCode ^ description.hashCode;
-}
-
-class Group {
-  final List<Card> cards;
-  final String name;
-  final Color color;
-
-  Group({required this.cards, required this.name, required this.color});
-  Group.fromMap(Map<String, dynamic> map)
-      : cards = map['cards'] ?? [], 
-        name = map['name'] ?? '',
-        color = map['color'] != null ? Color(map['color'] as int) : Colors.green;
-
-  int getTotalCards() => cards.length;
-}
+import 'package:card4k/core/utils/settings_manager.dart';
+import 'package:card4k/data/models/group.dart';
+import 'package:card4k/data/models/card.dart' as c;
 
 class GroupProvider {
   final SettingsManager _settingsManager = SettingsManager();
@@ -160,7 +130,7 @@ class GroupProvider {
 
     var lastUsedGroup = groupsCard.last;
     var getCardsScheme = await _settingsManager.loadString('assets/sql/card/004_get_cards.sql');
-    List<Card> cards = (await _database.rawQuery(getCardsScheme, [groupName])).map((map) => Card.fromMap(map)).toList();
+    List<c.Card> cards = (await _database.rawQuery(getCardsScheme, [groupName])).map((map) => c.Card.fromMap(map)).toList();
     String name = lastUsedGroup['name'];
     Color color = Color(lastUsedGroup['color'] as int);
     return Group(cards: cards, name: name, color: color);
@@ -185,19 +155,19 @@ class GroupProvider {
     return null;
   }
 
-  Future<void> addCardTo(Card card, String groupName) async {
+  Future<void> addCardTo(c.Card card, String groupName) async {
     var addCardScheme = await _settingsManager.loadString('assets/sql/card/001_add_card.sql');
     await _database.rawInsert(addCardScheme, [card.title, card.description, groupName]);
     await refreshCurrentGroup();
   }
 
-  Future<void> deleteCardFrom(Card card, String groupName) async {
+  Future<void> deleteCardFrom(c.Card card, String groupName) async {
     var removeCardScheme = await _settingsManager.loadString('assets/sql/card/002_remove_card.sql');
     await _database.rawDelete(removeCardScheme, [card.title, card.description, groupName]);
     await refreshCurrentGroup();
   }
 
-  Future<void> editCardAt(Card old, Card newest, String groupName) async {
+  Future<void> editCardAt(c.Card old, c.Card newest, String groupName) async {
     var editCardSheme = await _settingsManager.loadString('assets/sql/card/003_edit_card.sql');
     await _database.rawUpdate(editCardSheme, [newest.title, newest.description, old.title]);
     await refreshCurrentGroup();

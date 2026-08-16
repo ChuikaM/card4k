@@ -1,8 +1,8 @@
-import 'package:card4k/ui/page/home/view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 
-import 'package:card4k/core/group_provider.dart';
+import 'package:card4k/ui/pages/home_page.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

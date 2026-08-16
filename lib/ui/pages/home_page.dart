@@ -1,18 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:card4k/ui/burger/groups/view.dart';
-import 'package:card4k/ui/burger/new_group/new_group.dart';
+import 'package:card4k/ui/pages/home_page.dart';
+import 'package:card4k/ui/pages/cards_page.dart';
+import 'package:card4k/ui/pages/pairing_page.dart';
+import 'package:card4k/ui/pages/selection_page.dart';
 
-import 'package:card4k/core/group_provider.dart';
-import 'package:card4k/ui/dialog/card.dart';
+import 'package:card4k/ui/widgets/burgers/groups_burger.dart';
+import 'package:card4k/ui/widgets/burgers/new_group_burger.dart';
+import 'package:card4k/ui/widgets/dialog/card_dialog.dart';
+import 'package:card4k/ui/widgets/widget.dart';
 
-import 'package:card4k/ui/page/home/presenter.dart';
-import 'package:card4k/ui/page/cards/presenter.dart';
-import 'package:card4k/ui/page/pairing/presenter.dart';
-import 'package:card4k/ui/page/selection/presenter.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 
-import 'package:card4k/ui/util/widget.dart';
+import 'package:card4k/data/models/group.dart';
 
 class HomePage extends StatelessWidget { 
   final GroupProvider groupProvider;

@@ -1,8 +1,9 @@
-import 'package:card4k/core/group_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:card4k/ui/burger/new_group/new_group.dart';
 
-import 'package:card4k/ui/burger/groups/presenter.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/ui/widgets/burgers/new_group_burger.dart';
+
+import 'package:card4k/data/models/group.dart';
 
 class BurgerGroups extends StatelessWidget {
   final GroupProvider groupProvider;

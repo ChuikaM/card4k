@@ -1,12 +1,16 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:card4k/core/group_provider.dart' as gp;
-import 'package:card4k/ui/util/widget.dart';
-import 'package:card4k/ui/page/results/presenter.dart';
+
+import 'package:card4k/ui/pages/results_page.dart';
+
+import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/ui/widgets/widget.dart';
+
+import 'package:card4k/data/models/group.dart';
+import 'package:card4k/data/models/card.dart' as c;
 
 class SelectionPage extends StatefulWidget {
-  final gp.GroupProvider groupProvider;
+  final GroupProvider groupProvider;
   final VoidCallback onGoBack;
 
   const SelectionPage({
@@ -24,7 +28,7 @@ class _SelectionPageState extends State<SelectionPage> {
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xFF303030);
 
-    return StreamBuilder<gp.Group?>(
+    return StreamBuilder<Group?>(
       stream: widget.groupProvider.currentGroupStream,
       initialData: widget.groupProvider.currentGroup,
       builder: (context, snapshot) {
@@ -62,7 +66,7 @@ class _SelectionPageState extends State<SelectionPage> {
 }
 
 class _SelectionGame extends StatefulWidget {
-  final gp.Group group;
+  final Group group;
   final VoidCallback onGoBack;
 
   const _SelectionGame({
@@ -78,10 +82,10 @@ class _SelectionGame extends StatefulWidget {
 class _SelectionGameState extends State<_SelectionGame> {
   final Random _random = Random();
 
-  List<gp.Card> _allCards = [];
-  List<gp.Card> _remainingCards = [];
+  List<c.Card> _allCards = [];
+  List<c.Card> _remainingCards = [];
   
-  gp.Card? _currentCard;
+  c.Card? _currentCard;
   List<String> _choices = [];
   
   String? _selectedChoice;
@@ -103,7 +107,7 @@ class _SelectionGameState extends State<_SelectionGame> {
     }
   }
 
-  List<gp.Card> get _playableCards => widget.group.cards
+  List<c.Card> get _playableCards => widget.group.cards
       .where((card) => card.title.trim().isNotEmpty && card.description.trim().isNotEmpty)
       .toList();
 

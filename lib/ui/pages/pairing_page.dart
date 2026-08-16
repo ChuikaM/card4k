@@ -1,14 +1,17 @@
 import 'dart:async';
 import 'dart:math';
-
 import 'package:flutter/material.dart';
-import 'package:card4k/core/group_provider.dart' as gp;
-import 'package:card4k/ui/util/widget.dart';
 
-import 'package:card4k/ui/page/results/presenter.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/ui/widgets/widget.dart';
+
+import 'package:card4k/ui/pages/results_page.dart';
+
+import 'package:card4k/data/models/group.dart';
+import 'package:card4k/data/models/card.dart' as c;
 
 class PairingPage extends StatefulWidget {
-  final gp.GroupProvider groupProvider;
+  final GroupProvider groupProvider;
   final VoidCallback onGoBack;
 
   PairingPage({
@@ -26,7 +29,7 @@ class _PairingPageState extends State<PairingPage> {
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xFF303030);
 
-    return StreamBuilder<gp.Group?>(
+    return StreamBuilder<Group?>(
       stream: widget.groupProvider.currentGroupStream,
       initialData: widget.groupProvider.currentGroup,
       builder: (context, snapshot) {
@@ -66,7 +69,7 @@ class _PairingPageState extends State<PairingPage> {
 }
 
 class _PairingGame extends StatefulWidget {
-  final gp.Group group;
+  final Group group;
   final VoidCallback onGoBack;
 
   _PairingGame({
@@ -85,9 +88,9 @@ class _PairingGameState extends State<_PairingGame> {
   List<_PairItem> _leftItems = [];
   List<_PairItem> _rightItems = [];
 
-  List<gp.Card> _allCards = [];
-  List<gp.Card> _remainingCards = [];
-  List<gp.Card> _currentRoundCards = [];
+  List<c.Card> _allCards = [];
+  List<c.Card> _remainingCards = [];
+  List<c.Card> _currentRoundCards = [];
 
   final Set<int> _matchedIds = {};
 
@@ -127,7 +130,7 @@ class _PairingGameState extends State<_PairingGame> {
     super.dispose();
   }
 
-  List<gp.Card> get _playableCards => widget.group.cards
+  List<c.Card> get _playableCards => widget.group.cards
       .where(
         (card) =>
             card.title.trim().isNotEmpty &&
