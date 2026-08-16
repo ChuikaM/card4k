@@ -1,0 +1,1 @@
+SELECT * FROM cards WHERE group_name = ?;

@@ -1,0 +1,58 @@
+name: card4k
+description: "Flash card app by 4aika_M."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_launcher_icons: ^0.14.4
+  flutter_lints: ^6.0.0
+  flutter_svg: ^2.3.0
+  fl_chart: ^1.2.0
+  flutter_colorpicker: ^1.1.0
+  sqflite: ^2.4.3
+  shared_preferences: ^2.5.5
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icon/settings.svg
+    - assets/icon/card.svg
+    - assets/icon/new card.svg
+    - assets/icon/pairing.svg
+    - assets/icon/selection.svg
+    - assets/icon/close.svg
+    - assets/icon/prev.svg
+    - assets/icon/show.svg
+    - assets/icon/hide.svg
+    - assets/icon/next.svg
+    - assets/icon/remove.svg
+    - assets/icon/edit.svg
+    - assets/sql/card/001_add_card.sql
+    - assets/sql/card/002_remove_card.sql
+    - assets/sql/card/003_edit_card.sql
+    - assets/sql/card/004_get_cards.sql
+    - assets/sql/card/create_table.sql
+    - assets/sql/card/delete_table.sql
+    - assets/sql/group/001_add_group.sql
+    - assets/sql/group/002_edit_group.sql
+    - assets/sql/group/003_get_group.sql
+    - assets/sql/group/004_get_groups.sql
+    - assets/sql/group/005_remove_group.sql
+    - assets/sql/group/create_table.sql
+    - assets/sql/group/delete_table.sql
+    - assets/sql/drop_database.sql
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  image_path: "/Users/matvey/Documents/dev/flutter/card4k/assets/icon/icon.png"
