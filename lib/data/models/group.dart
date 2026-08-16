@@ -1,17 +1,16 @@
-import 'package:card4k/data/models/card.dart';
+import 'package:card4k/data/models/card.dart' as c;
 import 'dart:ui';
-import 'package:flutter/src/material/colors.dart';
 
 class Group {
-  final List<Card> cards;
+  final List<c.Card> cards;
   final String name;
   final Color color;
 
   Group({required this.cards, required this.name, required this.color});
   Group.fromMap(Map<String, dynamic> map)
-      : cards = map['cards'] ?? [], 
+      : cards = const <c.Card>[], 
         name = map['name'] ?? '',
-        color = map['color'] != null ? Color(map['color'] as int) : Colors.green;
+        color = map['color'] != null ? Color(map['color'] as int) : Color(0xFF4CAF50);
 
   int getTotalCards() => cards.length;
 }

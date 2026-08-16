@@ -1,22 +1,21 @@
 import 'dart:math';
+import 'package:card4k/core/di/service_locator.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
 import 'package:card4k/ui/pages/results_page.dart';
 
-import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:card4k/ui/widgets/widget.dart';
 
 import 'package:card4k/data/models/group.dart';
 import 'package:card4k/data/models/card.dart' as c;
 
 class SelectionPage extends StatefulWidget {
-  final GroupProvider groupProvider;
   final VoidCallback onGoBack;
 
   const SelectionPage({
     super.key,
-    required this.groupProvider,
-    required this.onGoBack,
+    required this.onGoBack
   });
 
   @override
@@ -24,18 +23,16 @@ class SelectionPage extends StatefulWidget {
 }
 
 class _SelectionPageState extends State<SelectionPage> {
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
+
   @override
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xFF303030);
 
-    return StreamBuilder<Group?>(
-      stream: widget.groupProvider.currentGroupStream,
-      initialData: widget.groupProvider.currentGroup,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data == null) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-        final group = snapshot.data;
+    return ListenableBuilder(
+      listenable: vm, 
+      builder: (context, _) {
+        final group = vm.currentGroup;
 
         if (group == null) {
           return const Scaffold(
@@ -60,7 +57,7 @@ class _SelectionPageState extends State<SelectionPage> {
             ),
           ),
         );
-      },
+      }
     );
   }
 }

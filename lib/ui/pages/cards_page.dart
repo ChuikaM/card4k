@@ -1,7 +1,7 @@
+import 'package:card4k/core/di/service_locator.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
-import 'package:card4k/ui/view_models/groups_view_model.dart';
 
 import 'package:card4k/ui/widgets/dialog/card_dialog.dart';
 import 'package:card4k/ui/widgets/widget.dart';
@@ -10,10 +10,12 @@ import 'package:card4k/data/models/card.dart' as c;
 import 'package:card4k/data/models/group.dart';
 
 class CardPage extends StatefulWidget {
-  final GroupProvider groupProvider;
   final VoidCallback onGoBack;
 
-  const CardPage({super.key, required this.groupProvider, required this.onGoBack});
+  const CardPage({
+    super.key, 
+    required this.onGoBack
+  });
 
   @override
   State<CardPage> createState() => _CardPageState();
@@ -22,6 +24,7 @@ class CardPage extends StatefulWidget {
 class _CardPageState extends State<CardPage> {
   final FocusNode focusNodeTitle = FocusNode();
   final FocusNode focusNodeDescription = FocusNode();
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
 
   String title = "";
   String description = "";
@@ -65,7 +68,7 @@ class _CardPageState extends State<CardPage> {
   void handleDelete(Group group) async {
     if (group.cards.isEmpty) return;
 
-    await widget.groupProvider.deleteCardFrom(group.cards[index], group.name);
+    await vm.deleteCard(group.cards[index]);
     setState((){
       _updateCardState(group.cards[index]);
     });
@@ -79,7 +82,7 @@ class _CardPageState extends State<CardPage> {
     });
   }
   void _initializeFirstCard() {
-    final group = widget.groupProvider.currentGroup;
+    final group = vm.currentGroup;
     if (group != null && group.cards.isNotEmpty) {
       _updateCardState(group.cards[0]);
     }
@@ -162,7 +165,7 @@ class _CardPageState extends State<CardPage> {
                                       ),
                                       Align(
                                         alignment: Alignment.center,
-                                        child: CardDialog(oldCard: c.Card(title: title, description: description), cardDialogMode: CardDialogMode.edit, groupProvider: widget.groupProvider, focusNodeTitle: focusNodeTitle, focusNodeDescription: focusNodeDescription),
+                                        child: CardDialog(oldCard: c.Card(title: title, description: description), cardDialogMode: CardDialogMode.edit, focusNodeTitle: focusNodeTitle, focusNodeDescription: focusNodeDescription),
                                       ),
                                     ],
                                   )
@@ -268,18 +271,11 @@ class _CardPageState extends State<CardPage> {
   @override
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xFF303030);
-    return StreamBuilder<Group?>(
-      stream: widget.groupProvider.currentGroupStream,
-      initialData: widget.groupProvider.currentGroup ?? Group(cards: [], name: "", color: Colors.transparent),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData || snapshot.data == null) {
-          return const Scaffold(body: Center(child: CircularProgressIndicator()));
-        }
-
-        final currentGroup = snapshot.data!;
-
-        if (currentGroup.cards.isNotEmpty) {
-          _updateLocalState(currentGroup);
+    return ListenableBuilder(
+      listenable: vm, 
+      builder:(context, child) {
+        if (vm.hasGroups) {
+          _updateLocalState(vm.currentGroup!);
         } else {
           title = "";
           description = "";
@@ -288,8 +284,8 @@ class _CardPageState extends State<CardPage> {
 
         final cardWidget = Column(
           children: [
-            buildProgressBar(context, widget.onGoBack, current: index + 1, total: currentGroup.getTotalCards()),
-            buildCardContent(context, currentGroup),
+            buildProgressBar(context, widget.onGoBack, current: index + 1, total: vm.currentGroup!.getTotalCards()),
+            buildCardContent(context, vm.currentGroup!),
           ],
         );
 

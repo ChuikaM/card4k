@@ -1,17 +1,15 @@
+import 'package:card4k/core/di/service_locator.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:card4k/ui/widgets/burgers/new_group_burger.dart';
 
 import 'package:card4k/data/models/group.dart';
 
 class BurgerGroups extends StatelessWidget {
-  final GroupProvider groupProvider;
-
-  const BurgerGroups({super.key, required this.groupProvider});
+  const BurgerGroups({super.key});
 
   Widget buildGroupsBurger(BuildContext context) {
-    var groupsPresenter = GroupsPresenter(groupProvider: groupProvider);
     return SizedBox(
       height: 120,
       width: MediaQuery.sizeOf(context).width,
@@ -22,9 +20,9 @@ class BurgerGroups extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              GroupsButtons(groupsPresenter: groupsPresenter),
+              GroupsButtons(),
               const SizedBox(width: 12),
-              AddGroupButton(groupsPresenter: groupsPresenter)
+              AddGroupButton()
             ],
           )
         )
@@ -42,18 +40,16 @@ class BurgerGroups extends StatelessWidget {
 }
 
 class GroupsButtons extends StatelessWidget {
-  final GroupsPresenter groupsPresenter;
-
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
   final FocusNode focusNode = FocusNode();
 
-  GroupsButtons({super.key, required this.groupsPresenter});
+  GroupsButtons({super.key});
 
   Widget buildGroupItem({required String name, required Color color, required bool isActive}) {
     return GestureDetector(
       onTap: () async {
         if (!isActive) {
-          await groupsPresenter.groupProvider.saveLastUsedGroup(name);
-          await groupsPresenter.groupProvider.refreshCurrentGroup();
+          vm.selectGroup(name);
         }
       },
       child: Column(
@@ -104,37 +100,23 @@ class GroupsButtons extends StatelessWidget {
     return Expanded(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: StreamBuilder(
-          stream: groupsPresenter.groupProvider.allGroupsStream, 
-          initialData: groupsPresenter.groupProvider.groups,
-          builder:(context, snapshot) {
-            if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return const Row();
-            }
+        child: ListenableBuilder(
+          listenable: vm,
+          builder:(context, child) {
+            final groups = vm.groups;
+            final activeGroupName = vm.currentGroup!.name;
 
-            final groups = snapshot.data!;
-            return StreamBuilder<Group?>(
-              stream: groupsPresenter.groupProvider.currentGroupStream,
-              initialData: groupsPresenter.groupProvider.currentGroup,
-              builder: (context, activeGroupSnapshot) {
-                if (!snapshot.hasData || snapshot.data == null) {
-                  return const Scaffold(body: Center(child: CircularProgressIndicator()));
-                }
-                final activeGroupName = activeGroupSnapshot.data!.name;
-
-                return Row(
-                  children: [
-                    for (var i = 0; i < groups.length; i++) ...[
-                      buildGroupItem(
-                        name: groups[i].name,
-                        color: groups[i].color,
-                        isActive: groups[i].name == activeGroupName,
-                      ),
-                      if (i < groups.length - 1) const SizedBox(width: 12),
-                    ]
-                  ],
-                );
-              },
+            return Row(
+              children: [
+                for (var i = 0; i < groups.length; i++) ...[
+                  buildGroupItem(
+                    name: groups[i].name,
+                    color: groups[i].color,
+                    isActive: groups[i].name == activeGroupName,
+                  ),
+                  if (i < groups.length - 1) const SizedBox(width: 12),
+                ]
+              ],
             );
           }
         )
@@ -144,10 +126,10 @@ class GroupsButtons extends StatelessWidget {
 }
 
 class AddGroupButton extends StatelessWidget {
-  final GroupsPresenter groupsPresenter;
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
   final FocusNode focusNode = FocusNode();
 
-  AddGroupButton({super.key, required this.groupsPresenter});
+  AddGroupButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +175,7 @@ class AddGroupButton extends StatelessWidget {
                       child: BurgerNewGroup(
                         burgerNewGroupMode: BurgerNewGroupMode.add, 
                         focusNode: focusNode, 
-                        onSubmit: groupsPresenter.addGroup,
+                        onSubmit: (_, newest) => vm.addGroup(newest),
                         onDelete: (_) {},
                       ),
                     ),

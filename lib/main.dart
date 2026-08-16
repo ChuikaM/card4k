@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 
+import 'package:card4k/core/di/service_locator.dart';
 import 'package:card4k/ui/pages/home_page.dart';
-import 'package:card4k/ui/view_models/groups_view_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,21 +13,12 @@ void main() async {
     statusBarBrightness: Brightness.dark,
   ));
 
-  final groupProvider = GroupProvider();
-  
-  final initFuture = groupProvider.init(); 
-
-  runApp(MainApp(
-    groupProvider: groupProvider,
-    initFuture: initFuture,
-  ));
+  ServiceLocator().init();
+  runApp(MainApp());
 }
 
 class MainApp extends StatefulWidget {
-  final GroupProvider groupProvider;
-  final Future<void> initFuture;
-
-  const MainApp({super.key, required this.groupProvider, required this.initFuture});
+  const MainApp({super.key});
 
   @override
   State<MainApp> createState() => _MainAppState();
@@ -44,24 +35,12 @@ class _MainAppState extends State<MainApp> {
         scaffoldBackgroundColor: backgroundColor,
         canvasColor: backgroundColor, 
       ),
-      home: FutureBuilder<void>(
-        future: widget.initFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(color: Color(0xFF30BE91)),
-              ),
-            );
-          }
-          return Scaffold(
-            backgroundColor: const Color(0xFF212121),
-            body: SafeArea(
-              child: HomePage(groupProvider: widget.groupProvider),
-            ),
-          );
-        },
-      ),
+      home: Scaffold(
+        backgroundColor: const Color(0xFF212121),
+        body: SafeArea(
+          child: HomePage(),
+        ),
+      )
     );
   }
 }

@@ -1,6 +1,7 @@
+import 'package:card4k/core/di/service_locator.dart';
+import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/ui/view_models/groups_view_model.dart';
 import 'package:card4k/data/models/card.dart' as c;
 
 enum CardDialogMode { add, edit }
@@ -8,14 +9,12 @@ enum CardDialogMode { add, edit }
 class CardDialog extends StatefulWidget {
   final CardDialogMode cardDialogMode;
   final c.Card? oldCard;
-  final GroupProvider groupProvider;
   final FocusNode focusNodeTitle;
   final FocusNode focusNodeDescription;
   const CardDialog({
     super.key, 
     this.oldCard, 
     required this.cardDialogMode, 
-    required this.groupProvider, 
     required this.focusNodeTitle, 
     required this.focusNodeDescription
   });
@@ -25,10 +24,10 @@ class CardDialog extends StatefulWidget {
 }
 
 class _CardDialogState extends State<CardDialog> {
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
   late final TextEditingController _titleController;
   late final TextEditingController _descController;
 
-  // NEW: error flags
   bool _titleError = false;
   bool _descError = false;
 
@@ -58,7 +57,6 @@ class _CardDialogState extends State<CardDialog> {
     super.dispose();
   }
 
-  // NEW: returns true only if both fields are non-empty
   bool _validate() {
     final titleEmpty = _titleController.text.trim().isEmpty;
     final descEmpty = _descController.text.trim().isEmpty;
@@ -71,17 +69,14 @@ class _CardDialogState extends State<CardDialog> {
     return !titleEmpty && !descEmpty;
   }
 
-  Future<void> _handleApply(GroupProvider groupProvider) async {
-    String? groupName = await groupProvider.getLastUsedGroupName();
-    if (groupName == null || groupName.isEmpty) return;
-
+  Future<void> _handleApply() async {
     final newCard = c.Card(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
     );
     switch(widget.cardDialogMode) {
-      case CardDialogMode.add:  groupProvider.addCardTo(newCard, groupName); break;
-      case CardDialogMode.edit: groupProvider.editCardAt(widget.oldCard!, newCard, groupName); break;
+      case CardDialogMode.add:  vm.addCard(newCard); break;
+      case CardDialogMode.edit: vm.editCard(widget.oldCard!, newCard); break;
     }
   }
 
@@ -208,7 +203,7 @@ class _CardDialogState extends State<CardDialog> {
                     onTap: () async {
                       // NEW: block submission if validation fails
                       if (!_validate()) return;
-                      await _handleApply(widget.groupProvider);
+                      await _handleApply();
                       if (mounted) Navigator.pop(context); 
                     },
                   ),

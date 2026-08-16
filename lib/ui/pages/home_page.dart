@@ -15,15 +15,14 @@ import 'package:card4k/ui/view_models/groups_view_model.dart';
 
 import 'package:card4k/data/models/group.dart';
 
+import 'package:card4k/core/di/service_locator.dart';
+
 class HomePage extends StatelessWidget { 
-  final GroupProvider groupProvider;
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
 
-  const HomePage({
-    super.key, 
-    required this.groupProvider
-  });
+  HomePage({super.key});
 
-  Widget _buildCreateGroupButton(BuildContext context, HomePresenter presenter) {
+  Widget _buildCreateGroupButton(BuildContext context) {
     return GestureDetector(
       onTap: () {
         final focusNode = FocusNode();
@@ -65,7 +64,7 @@ class HomePage extends StatelessWidget {
                       child: BurgerNewGroup(
                         burgerNewGroupMode: BurgerNewGroupMode.add, 
                         focusNode: focusNode,
-                        onSubmit: presenter.addGroup,
+                        onSubmit: (_, newest) => ServiceLocator().groupsViewModel.addGroup(newest),
                         onDelete: (_){},
                       ),
                     ),
@@ -112,60 +111,15 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     const Color backgroundColor = Color(0xFF303030);
-    var presenter = HomePresenter(
-      groupProvider: groupProvider
-    );
-
-    return StreamBuilder<List<Group>>(
-      stream: groupProvider.allGroupsStream,
-      initialData: groupProvider.groups,
+    return ListenableBuilder(
+      listenable: vm,
       builder: (context, snapshot) {
-        final hasGroups = snapshot.data?.isNotEmpty ?? false;
-
         final mainMenu = Column(
           children: [
-            HomeTitle(homePresenter: presenter, hasGroups: hasGroups),
-            if (hasGroups) ...[
-              HomeMain(homePresenter: presenter),
-              const Spacer()
-            ] else ...[
-              Expanded(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.style_outlined, 
-                        size: 80,
-                        color: Colors.white24,
-                      ),
-                      const SizedBox(height: 24),
-                      const Text(
-                        "Create Your First Group",
-                        style: TextStyle(
-                          color: Colors.white70,
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      const Text(
-                        "Tap the button below to get started!",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.white38,
-                          fontSize: 16,
-                          height: 1.5, 
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-                      _buildCreateGroupButton(context, presenter),
-                    ],
-                  ),
-                )
-              )
-            ]
-          ],
+            HomeTitle(hasGroups: true),
+            HomeMain(),
+            const Spacer()
+          ]
         );
 
         return SafeArea(
@@ -180,14 +134,15 @@ class HomePage extends StatelessWidget {
 }
 
 class HomeTitle extends StatelessWidget {
-  final HomePresenter homePresenter;
+  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
+
   final bool hasGroups;
 
   final FocusNode focusNode = FocusNode();
   final FocusNode focusNodeTitle = FocusNode();
   final FocusNode focusNodeDescription = FocusNode();
 
-  HomeTitle({super.key, required this.homePresenter, required this.hasGroups});
+  HomeTitle({super.key, required this.hasGroups});
 
   @override
   Widget build(BuildContext context) {
@@ -227,7 +182,7 @@ class HomeTitle extends StatelessWidget {
               child: child,
             );
           },
-          pageBuilder: (context, animation, secondaryAnimation) => SafeArea(child: Align(alignment: Alignment.topCenter, child: BurgerGroups(groupProvider: homePresenter.groupProvider))),
+          pageBuilder: (context, animation, secondaryAnimation) => SafeArea(child: Align(alignment: Alignment.topCenter, child: BurgerGroups())),
         ),
         borderRadius: BorderRadius.circular(15),
         child: Padding(
@@ -236,26 +191,20 @@ class HomeTitle extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.start,
             spacing: 10,
             children: [
-              StreamBuilder(
-                stream: homePresenter.groupProvider.currentGroupStream,
-                initialData: homePresenter.groupProvider.currentGroup,
-                builder: (context, snapshot) =>
-                CircleAvatar(
+              ListenableBuilder(
+                listenable: vm, 
+                builder: (context, _) => CircleAvatar(
                   radius: 12,
-                  backgroundColor: snapshot.data?.color ?? Colors.grey,
+                  backgroundColor: vm.currentGroup?.color ?? Colors.grey,
                 ),
               ),
-              
-              StreamBuilder(
-                stream: homePresenter.groupProvider.currentGroupStream,
-                initialData: homePresenter.groupProvider.currentGroup,
-                builder:(context, snapshot) {
-                  return Text(
-                    snapshot.data?.name ?? "Add Group", 
-                    style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                  );
-                },
-              )
+              ListenableBuilder(
+                listenable: vm, 
+                builder: (context, _) => Text(
+                  vm.currentGroup?.name ?? "Add Group", 
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                )
+              ),
             ],    
           ),
         )
@@ -264,7 +213,7 @@ class HomeTitle extends StatelessWidget {
     final cardsButton = Ink(
       decoration: borderDecoration,
       child: InkWell(
-        onTap: () => buildAnimatedPage(context, CardPage(groupProvider: homePresenter.groupProvider, onGoBack: () => Navigator.pop(context))),
+        onTap: () => buildAnimatedPage(context, CardPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
         child: SizedBox(
           width: availableWidth / 2 - 20,
@@ -277,10 +226,9 @@ class HomeTitle extends StatelessWidget {
                 SvgPicture.asset("assets/icon/card.svg"),
                 SizedBox(height: 10,),
                 Text("Cards", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),),
-                StreamBuilder(
-                  stream: homePresenter.groupProvider.currentGroupStream, 
-                  initialData: homePresenter.groupProvider.currentGroup,
-                  builder: (context, snapshot) => Text("Total: ${snapshot.data?.getTotalCards() ?? 0}", style: TextStyle(color: Colors.white, fontSize: 12),),
+                ListenableBuilder(
+                  listenable: vm, 
+                  builder: (context, _) => Text("Total: ${vm.currentGroup?.getTotalCards() ?? 0}", style: TextStyle(color: Colors.white, fontSize: 12),),
                 )
               ],
             ),
@@ -317,7 +265,6 @@ class HomeTitle extends StatelessWidget {
                       alignment: Alignment.center,
                       child: CardDialog(
                         cardDialogMode: CardDialogMode.add, 
-                        groupProvider: homePresenter.groupProvider, 
                         focusNodeTitle: focusNodeTitle, 
                         focusNodeDescription: focusNodeDescription
                       ),
@@ -397,11 +344,11 @@ class HomeTitle extends StatelessWidget {
                                       onTap: () {}, 
                                       behavior: HitTestBehavior.opaque,
                                       child: BurgerNewGroup(
-                                        oldGroup: homePresenter.groupProvider.currentGroup,
+                                        oldGroup: vm.currentGroup,
                                         burgerNewGroupMode: BurgerNewGroupMode.edit, 
                                         focusNode: focusNode,
-                                        onSubmit: homePresenter.editGroup,
-                                        onDelete: homePresenter.deleteGroup,
+                                        onSubmit: vm.editGroup,
+                                        onDelete: vm.deleteGroup,
                                       ),
                                     ),
                                   ),
@@ -456,9 +403,9 @@ class HomeTitle extends StatelessWidget {
 }
 
 class HomeMain extends StatelessWidget {
-  final HomePresenter homePresenter;
+  final GroupsViewModel groupsViewModel = ServiceLocator().groupsViewModel;
 
-  const HomeMain({super.key, required this.homePresenter});
+  HomeMain({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -478,7 +425,7 @@ class HomeMain extends StatelessWidget {
     final pairingButton = Ink(
       decoration: borderDecoration,
       child: InkWell(
-        onTap: () => buildAnimatedPage(context, PairingPage(groupProvider: homePresenter.groupProvider, onGoBack: () => Navigator.pop(context))),
+        onTap: () => buildAnimatedPage(context, PairingPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
           child: Padding(
             padding: EdgeInsetsGeometry.all(20),
@@ -504,7 +451,7 @@ class HomeMain extends StatelessWidget {
     final selectionButton = Ink(
       decoration: borderDecoration,
       child: InkWell(
-        onTap: () => buildAnimatedPage(context, SelectionPage(groupProvider: homePresenter.groupProvider, onGoBack: () => Navigator.pop(context))),
+        onTap: () => buildAnimatedPage(context, SelectionPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
           child: Padding(
             padding: EdgeInsetsGeometry.all(20),
