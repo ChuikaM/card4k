@@ -3,7 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 
-import 'package:card4k/data/models/group.dart';
+import 'package:card4k/models/group.dart';
 
 enum PairItemState { normal, selected, matched, failed }
 

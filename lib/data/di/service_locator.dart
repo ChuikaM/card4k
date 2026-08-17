@@ -1,5 +1,5 @@
-import 'package:card4k/ui/view_models/groups_view_model.dart';
-import 'package:card4k/ui/view_models/selection_view_model.dart';
+import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/selection_view_model.dart';
 
 import 'package:card4k/data/repositories/group_repository.dart';
 import 'package:card4k/data/repositories/sqlite_group_repository.dart';

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 
-import 'package:card4k/data/models/card.dart';
-import 'package:card4k/data/models/group.dart';
+import 'package:card4k/models/card.dart';
+import 'package:card4k/models/group.dart';
 import 'package:card4k/data/repositories/group_repository.dart';
 
 class GroupsViewModel extends ChangeNotifier {

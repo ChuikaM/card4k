@@ -1,8 +1,8 @@
-import 'package:card4k/core/di/service_locator.dart';
-import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/data/di/service_locator.dart';
+import 'package:card4k/providers/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/data/models/card.dart' as c;
+import 'package:card4k/models/card.dart' as c;
 
 enum CardDialogMode { add, edit }
 

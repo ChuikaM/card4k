@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 
-import 'package:card4k/core/di/service_locator.dart';
-import 'package:card4k/ui/pages/home_page.dart';
+import 'package:card4k/data/di/service_locator.dart';
+import 'package:card4k/pages/home_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

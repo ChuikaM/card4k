@@ -1,10 +1,10 @@
-import 'package:card4k/core/di/service_locator.dart';
-import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/data/di/service_locator.dart';
+import 'package:card4k/providers/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/ui/widgets/burgers/new_group_burger.dart';
+import 'package:card4k/widgets/burgers/new_group_burger.dart';
 
-import 'package:card4k/data/models/group.dart';
+import 'package:card4k/models/group.dart';
 
 class BurgerGroups extends StatelessWidget {
   const BurgerGroups({super.key});

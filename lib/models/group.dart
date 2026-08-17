@@ -1,4 +1,4 @@
-import 'package:card4k/data/models/card.dart' as c;
+import 'package:card4k/models/card.dart' as c;
 import 'dart:ui';
 
 class Group {

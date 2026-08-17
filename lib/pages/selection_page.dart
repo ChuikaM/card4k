@@ -1,14 +1,14 @@
 import 'dart:math';
-import 'package:card4k/core/di/service_locator.dart';
-import 'package:card4k/ui/view_models/groups_view_model.dart';
+import 'package:card4k/data/di/service_locator.dart';
+import 'package:card4k/providers/groups_view_model.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/ui/pages/results_page.dart';
+import 'package:card4k/pages/results_page.dart';
 
-import 'package:card4k/ui/widgets/widget.dart';
+import 'package:card4k/widgets/widget.dart';
 
-import 'package:card4k/data/models/group.dart';
-import 'package:card4k/data/models/card.dart' as c;
+import 'package:card4k/models/group.dart';
+import 'package:card4k/models/card.dart' as c;
 
 class SelectionPage extends StatefulWidget {
   final VoidCallback onGoBack;

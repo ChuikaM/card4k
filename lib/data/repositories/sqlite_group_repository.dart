@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 
-import '../models/card.dart' as c;
-import '../models/group.dart';
+import '../../models/card.dart' as c;
+import '../../models/group.dart';
 import '../settings_manager.dart';
 import 'group_repository.dart';
 
