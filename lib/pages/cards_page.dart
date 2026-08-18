@@ -1,6 +1,6 @@
-import 'package:card4k/data/di/service_locator.dart';
-import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/groups_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:card4k/widgets/dialog/card_dialog.dart';
@@ -9,7 +9,7 @@ import 'package:card4k/widgets/widget.dart';
 import 'package:card4k/models/card.dart' as c;
 import 'package:card4k/models/group.dart';
 
-class CardPage extends StatefulWidget {
+class CardPage extends ConsumerStatefulWidget {
   final VoidCallback onGoBack;
 
   const CardPage({
@@ -18,13 +18,12 @@ class CardPage extends StatefulWidget {
   });
 
   @override
-  State<CardPage> createState() => _CardPageState();
+  ConsumerState<CardPage> createState() => _CardPageState();
 }
 
-class _CardPageState extends State<CardPage> {
+class _CardPageState extends ConsumerState<CardPage> {
   final FocusNode focusNodeTitle = FocusNode();
   final FocusNode focusNodeDescription = FocusNode();
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
 
   String title = "";
   String description = "";
@@ -66,9 +65,10 @@ class _CardPageState extends State<CardPage> {
   }
 
   void handleDelete(Group group) async {
+    
     if (group.cards.isEmpty) return;
 
-    await vm.deleteCard(group.cards[index]);
+    await ref.read(groupsProvider.notifier).deleteCard(group.cards[index]);
     setState((){
       _updateCardState(group.cards[index]);
     });
@@ -82,10 +82,7 @@ class _CardPageState extends State<CardPage> {
     });
   }
   void _initializeFirstCard() {
-    final group = vm.currentGroup;
-    if (group != null && group.cards.isNotEmpty) {
-      _updateCardState(group.cards[0]);
-    }
+   
   }
 
   Widget buildCards(BuildContext context, Group group) {
@@ -270,32 +267,28 @@ class _CardPageState extends State<CardPage> {
   
   @override
   Widget build(BuildContext context) {
+    var provider = ref.watch(groupsProvider);
+
     const Color backgroundColor = Color(0xFF303030);
-    return ListenableBuilder(
-      listenable: vm, 
-      builder:(context, child) {
-        if (vm.hasGroups) {
-          _updateLocalState(vm.currentGroup!);
-        } else {
-          title = "";
-          description = "";
-          index = 0;
-        }
 
-        final cardWidget = Column(
-          children: [
-            buildProgressBar(context, widget.onGoBack, current: index + 1, total: vm.currentGroup!.getTotalCards()),
-            buildCardContent(context, vm.currentGroup!),
-          ],
-        );
-
-        return SafeArea(
-          child: Scaffold(
-            backgroundColor: backgroundColor,
-            body: cardWidget,
-          ),
-        );
-      },
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        body: provider.when(
+          data:(data) {
+            _updateLocalState(data.current);
+            final cardWidget = Column(
+              children: [
+                buildProgressBar(context, widget.onGoBack, current: index + 1, total: data.current.getTotalCards()),
+                buildCardContent(context, data.current),
+              ],
+            );
+            return cardWidget;
+          }, 
+          error:(error, stackTrace) => Text("Error"), 
+          loading:() => Text("Loading"),
+        )
+      ),
     );
   }
   void _updateLocalState(Group group) {

@@ -1,8 +1,10 @@
+import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 
-import 'package:card4k/data/di/service_locator.dart';
 import 'package:card4k/pages/home_page.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,20 +15,17 @@ void main() async {
     statusBarBrightness: Brightness.dark,
   ));
 
-  ServiceLocator().init();
-  runApp(MainApp());
+  final container = ProviderContainer();
+  await container.read(sqliteGroupProvider).init();
+
+  runApp(UncontrolledProviderScope(container: container, child: MainApp()));
 }
 
-class MainApp extends StatefulWidget {
+class MainApp extends ConsumerWidget {
   const MainApp({super.key});
 
   @override
-  State<MainApp> createState() => _MainAppState();
-}
-
-class _MainAppState extends State<MainApp> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     const Color backgroundColor = Color(0xFF303030);
 
     return MaterialApp(

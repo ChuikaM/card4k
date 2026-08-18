@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
-import 'package:card4k/pages/home_page.dart';
 import 'package:card4k/pages/cards_page.dart';
 import 'package:card4k/pages/pairing_page.dart';
 import 'package:card4k/pages/selection_page.dart';
@@ -11,131 +10,34 @@ import 'package:card4k/widgets/burgers/new_group_burger.dart';
 import 'package:card4k/widgets/dialog/card_dialog.dart';
 import 'package:card4k/widgets/widget.dart';
 
-import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/groups_provider.dart';
 
-import 'package:card4k/models/group.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:card4k/data/di/service_locator.dart';
-
-class HomePage extends StatelessWidget { 
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
-
-  HomePage({super.key});
-
-  Widget _buildCreateGroupButton(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        final focusNode = FocusNode();
-        showGeneralDialog(
-          context: context,
-          barrierDismissible: false,
-          barrierLabel: 'Dismiss Modal',
-          barrierColor: const Color(0xA0212121),
-          transitionDuration: const Duration(milliseconds: 250),
-          transitionBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0, -1),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
-              child: child,
-            );
-          },
-          pageBuilder: (context, animation, secondaryAnimation) {
-            return SafeArea(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: GestureDetector(
-                  onTap: () {
-                    if (!focusNode.hasFocus) {
-                      Navigator.pop(context);
-                    } else {
-                      focusNode.unfocus();
-                    }
-                  },
-                  child: Container(
-                    color: Colors.transparent,
-                    width: double.infinity,
-                    height: double.infinity,
-                    alignment: Alignment.topCenter,
-                    child: GestureDetector(
-                      onTap: () {}, 
-                      behavior: HitTestBehavior.opaque,
-                      child: BurgerNewGroup(
-                        burgerNewGroupMode: BurgerNewGroupMode.add, 
-                        focusNode: focusNode,
-                        onSubmit: (_, newest) => ServiceLocator().groupsViewModel.addGroup(newest),
-                        onDelete: (_){},
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          },
-        );
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
-        decoration: BoxDecoration(
-          color: const Color(0xFF30BE91),
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: const [
-            BoxShadow(
-              color: Color(0xFF2E6252),
-              offset: Offset(0, 6),
-              blurRadius: 6.0,
-              blurStyle: BlurStyle.inner,
-            )
-          ],
-        ),
-        child: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.add, color: Colors.white, size: 28),
-            SizedBox(width: 12),
-            Text(
-              "Create Group",
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+class HomePage extends ConsumerWidget { 
+  const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     const Color backgroundColor = Color(0xFF303030);
-    return ListenableBuilder(
-      listenable: vm,
-      builder: (context, snapshot) {
-        final mainMenu = Column(
-          children: [
-            HomeTitle(hasGroups: true),
-            HomeMain(),
-            const Spacer()
-          ]
-        );
+    final mainMenu = Column(
+      children: [
+        HomeTitle(hasGroups: true),
+        HomeMain(),
+        const Spacer()
+      ]
+    );
 
-        return SafeArea(
-          child: Scaffold(
-            backgroundColor: backgroundColor,
-            body: mainMenu
-          ),
-        );
-      }
+    return SafeArea(
+      child: Scaffold(
+        backgroundColor: backgroundColor,
+        body: mainMenu
+      ),
     );
   }
 }
 
-class HomeTitle extends StatelessWidget {
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
-
+class HomeTitle extends ConsumerWidget {
   final bool hasGroups;
 
   final FocusNode focusNode = FocusNode();
@@ -145,7 +47,9 @@ class HomeTitle extends StatelessWidget {
   HomeTitle({super.key, required this.hasGroups});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    var provider = ref.watch(groupsProvider);
+
     double availableHeight = MediaQuery.sizeOf(context).height;
     double availableWidth = MediaQuery.sizeOf(context).width;
 
@@ -187,26 +91,24 @@ class HomeTitle extends StatelessWidget {
         borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: EdgeInsetsGeometry.symmetric(vertical: 1, horizontal: 10),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            spacing: 10,
-            children: [
-              ListenableBuilder(
-                listenable: vm, 
-                builder: (context, _) => CircleAvatar(
+          child: provider.when(
+            loading: () => Text("Loading"),
+            data: (data) => Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              spacing: 10,
+              children: [
+                CircleAvatar(
                   radius: 12,
-                  backgroundColor: vm.currentGroup?.color ?? Colors.grey,
+                  backgroundColor: data.current.color,
                 ),
-              ),
-              ListenableBuilder(
-                listenable: vm, 
-                builder: (context, _) => Text(
-                  vm.currentGroup?.name ?? "Add Group", 
+                Text(
+                  data.current.name, 
                   style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
                 )
-              ),
-            ],    
-          ),
+              ],    
+            ),
+            error:(error, stackTrace) => Text("Error"),
+          )
         )
       )
     );
@@ -226,9 +128,10 @@ class HomeTitle extends StatelessWidget {
                 SvgPicture.asset("assets/icon/card.svg"),
                 SizedBox(height: 10,),
                 Text("Cards", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),),
-                ListenableBuilder(
-                  listenable: vm, 
-                  builder: (context, _) => Text("Total: ${vm.currentGroup?.getTotalCards() ?? 0}", style: TextStyle(color: Colors.white, fontSize: 12),),
+                provider.when(
+                  loading: () => Text("Total: loading", style: TextStyle(color: Colors.white, fontSize: 12)),
+                  error: (error, stackTrace) => Text("Total: 0", style: TextStyle(color: Colors.white, fontSize: 12)),
+                  data: (data) => Text("Total: ${data.current.getTotalCards()}", style: TextStyle(color: Colors.white, fontSize: 12),),
                 )
               ],
             ),
@@ -344,11 +247,10 @@ class HomeTitle extends StatelessWidget {
                                       onTap: () {}, 
                                       behavior: HitTestBehavior.opaque,
                                       child: BurgerNewGroup(
-                                        oldGroup: vm.currentGroup,
                                         burgerNewGroupMode: BurgerNewGroupMode.edit, 
                                         focusNode: focusNode,
-                                        onSubmit: vm.editGroup,
-                                        onDelete: vm.deleteGroup,
+                                        onSubmit: ref.read(groupsProvider.notifier).editGroup,
+                                        onDelete: ref.read(groupsProvider.notifier).deleteGroup,
                                       ),
                                     ),
                                   ),
@@ -402,13 +304,11 @@ class HomeTitle extends StatelessWidget {
   }
 }
 
-class HomeMain extends StatelessWidget {
-  final GroupsViewModel groupsViewModel = ServiceLocator().groupsViewModel;
-
-  HomeMain({super.key});
+class HomeMain extends ConsumerWidget {
+  const HomeMain({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final borderDecoration = BoxDecoration(
       boxShadow: [
         BoxShadow(
@@ -425,7 +325,7 @@ class HomeMain extends StatelessWidget {
     final pairingButton = Ink(
       decoration: borderDecoration,
       child: InkWell(
-        onTap: () => buildAnimatedPage(context, PairingPage(onGoBack: () => Navigator.pop(context))),
+        onTap: () {}, //buildAnimatedPage(context, PairingPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
           child: Padding(
             padding: EdgeInsetsGeometry.all(20),

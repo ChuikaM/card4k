@@ -28,7 +28,7 @@ class BurgerNewGroup extends StatefulWidget {
 class _BurgerNewGroupState extends State<BurgerNewGroup> {
   late final TextEditingController _textEditingController;
   late Color _currentColor;
-  bool _hasError = false; // NEW: tracks validation state
+  bool _hasError = false;
 
   @override
   void initState() { 

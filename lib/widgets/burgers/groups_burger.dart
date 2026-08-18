@@ -1,10 +1,11 @@
-import 'package:card4k/data/di/service_locator.dart';
-import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/groups_provider.dart';
+import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 
 import 'package:card4k/widgets/burgers/new_group_burger.dart';
 
 import 'package:card4k/models/group.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BurgerGroups extends StatelessWidget {
   const BurgerGroups({super.key});
@@ -39,19 +40,14 @@ class BurgerGroups extends StatelessWidget {
   }
 }
 
-class GroupsButtons extends StatelessWidget {
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
+class GroupsButtons extends ConsumerWidget {
   final FocusNode focusNode = FocusNode();
 
   GroupsButtons({super.key});
 
-  Widget buildGroupItem({required String name, required Color color, required bool isActive}) {
+  Widget buildGroupItem({required String name, required Color color, required bool isActive, required VoidCallback onTapped}) {
     return GestureDetector(
-      onTap: () async {
-        if (!isActive) {
-          vm.selectGroup(name);
-        }
-      },
+      onTap: onTapped,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -96,43 +92,44 @@ class GroupsButtons extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    var provider = ref.watch(groupsProvider);
     return Expanded(
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
-        child: ListenableBuilder(
-          listenable: vm,
-          builder:(context, child) {
-            final groups = vm.groups;
-            final activeGroupName = vm.currentGroup!.name;
-
+        child: provider.when(
+          data:(data) {
+            final groups = data.groups;
             return Row(
               children: [
                 for (var i = 0; i < groups.length; i++) ...[
                   buildGroupItem(
                     name: groups[i].name,
                     color: groups[i].color,
-                    isActive: groups[i].name == activeGroupName,
+                    isActive: groups[i].name == data.current.name,
+                    onTapped: () => ref.read(groupsProvider.notifier).selectGroup(groups[i].name),
                   ),
                   if (i < groups.length - 1) const SizedBox(width: 12),
                 ]
               ],
             );
-          }
+          }, 
+          error:(error, stackTrace) => Text("Error"), 
+          loading: () => Text("Loading")
         )
       ),
     );
   }
 }
 
-class AddGroupButton extends StatelessWidget {
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
+class AddGroupButton extends ConsumerWidget {
   final FocusNode focusNode = FocusNode();
 
   AddGroupButton({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final groupsNotifier = ref.read(groupsProvider.notifier);
     return GestureDetector(
       onTap: () {
         Navigator.pop(context);
@@ -175,7 +172,7 @@ class AddGroupButton extends StatelessWidget {
                       child: BurgerNewGroup(
                         burgerNewGroupMode: BurgerNewGroupMode.add, 
                         focusNode: focusNode, 
-                        onSubmit: (_, newest) => vm.addGroup(newest),
+                        onSubmit: (_, newest) => groupsNotifier.addGroup(newest),
                         onDelete: (_) {},
                       ),
                     ),

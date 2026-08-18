@@ -17,4 +17,5 @@ abstract class GroupRepository {
 
   Future<void> saveLastUsedGroupName(String name);
   Future<String?> getLastUsedGroupName();
+
 }

@@ -1,6 +1,5 @@
 import 'dart:math';
-import 'package:card4k/data/di/service_locator.dart';
-import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/groups_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:card4k/pages/results_page.dart';
@@ -9,8 +8,9 @@ import 'package:card4k/widgets/widget.dart';
 
 import 'package:card4k/models/group.dart';
 import 'package:card4k/models/card.dart' as c;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class SelectionPage extends StatefulWidget {
+class SelectionPage extends ConsumerStatefulWidget {
   final VoidCallback onGoBack;
 
   const SelectionPage({
@@ -19,32 +19,23 @@ class SelectionPage extends StatefulWidget {
   });
 
   @override
-  State<SelectionPage> createState() => _SelectionPageState();
+  ConsumerState<SelectionPage> createState() => _SelectionPageState();
 }
 
-class _SelectionPageState extends State<SelectionPage> {
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
-
+class _SelectionPageState extends ConsumerState<SelectionPage> {
   @override
   Widget build(BuildContext context) {
+    var provider = ref.read(groupsProvider);
     const Color backgroundColor = Color(0xFF303030);
 
-    return ListenableBuilder(
-      listenable: vm, 
-      builder: (context, _) {
-        final group = vm.currentGroup;
-
-        if (group == null) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
+    return provider.when(
+      data:(data) {
+        final group = data.current;
 
         final contentHash = group.cards.fold<int>(
           0,
           (previousValue, card) => previousValue ^ card.hashCode,
         );
-
         return SafeArea(
           child: Scaffold(
             backgroundColor: backgroundColor,
@@ -57,7 +48,11 @@ class _SelectionPageState extends State<SelectionPage> {
             ),
           ),
         );
-      }
+      }, 
+      error:(error, stackTrace) => Text("Error"), 
+      loading: () => const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      )
     );
   }
 }

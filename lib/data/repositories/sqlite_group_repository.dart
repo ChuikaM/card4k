@@ -4,11 +4,11 @@ import 'package:path/path.dart' as p;
 
 import '../../models/card.dart' as c;
 import '../../models/group.dart';
-import '../settings_manager.dart';
+import 'settings_repository.dart';
 import 'group_repository.dart';
 
 class SqliteGroupRepository implements GroupRepository {
-  final SettingsManager _settings;
+  final SettingsRepository _settings;
   late Database _database;
   final Map<String, String> _sql = {};
 
@@ -30,7 +30,6 @@ class SqliteGroupRepository implements GroupRepository {
 
   @override
   Future<void> init() async {
-    // Load all SQL assets in parallel, once
     await Future.wait(_sqlFiles.map((file) async {
       _sql[file] = await _settings.loadString('assets/sql/$file');
     }));
@@ -65,7 +64,6 @@ class SqliteGroupRepository implements GroupRepository {
       [group.name, group.color.toARGB32()],
     );
   }
-
   @override
   Future<void> updateGroup(Group old, Group newest) async {
     await _database.rawUpdate(
@@ -79,19 +77,16 @@ class SqliteGroupRepository implements GroupRepository {
       );
     }
   }
-
   @override
   Future<void> removeGroup(String groupName) async {
     await _database.rawDelete('DELETE FROM cards WHERE group_name = ?', [groupName]);
     await _database.rawDelete(_sql['group/005_remove_group.sql']!, [groupName]);
   }
-
   @override
   Future<List<Group>> fetchGroups() async {
     final rows = await _database.rawQuery(_sql['group/004_get_groups.sql']!);
     return rows.map((map) => Group.fromMap(map)).toList();
   }
-
   @override
   Future<Group?> fetchGroupByName(String name) async {
     final groupRows = await _database.rawQuery(_sql['group/003_get_group.sql']!, [name]);
@@ -115,7 +110,6 @@ class SqliteGroupRepository implements GroupRepository {
       [card.title, card.description, groupName],
     );
   }
-
   @override
   Future<void> updateCard(c.Card old, c.Card newest, String groupName) async {
     await _database.rawUpdate(
@@ -123,7 +117,6 @@ class SqliteGroupRepository implements GroupRepository {
       [newest.title, newest.description, old.title],
     );
   }
-
   @override
   Future<void> removeCard(c.Card card, String groupName) async {
     await _database.rawDelete(

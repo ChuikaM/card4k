@@ -1,12 +1,12 @@
-import 'package:card4k/data/di/service_locator.dart';
-import 'package:card4k/providers/groups_view_model.dart';
+import 'package:card4k/providers/groups_provider.dart';
 import 'package:flutter/material.dart';
 
 import 'package:card4k/models/card.dart' as c;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 enum CardDialogMode { add, edit }
 
-class CardDialog extends StatefulWidget {
+class CardDialog extends ConsumerStatefulWidget {
   final CardDialogMode cardDialogMode;
   final c.Card? oldCard;
   final FocusNode focusNodeTitle;
@@ -20,11 +20,10 @@ class CardDialog extends StatefulWidget {
   });
 
   @override
-  State<CardDialog> createState() => _CardDialogState();
+  ConsumerState<CardDialog> createState() => _CardDialogState();
 }
 
-class _CardDialogState extends State<CardDialog> {
-  final GroupsViewModel vm = ServiceLocator().groupsViewModel;
+class _CardDialogState extends ConsumerState<CardDialog> {
   late final TextEditingController _titleController;
   late final TextEditingController _descController;
 
@@ -37,7 +36,6 @@ class _CardDialogState extends State<CardDialog> {
     _titleController = TextEditingController(text: widget.oldCard?.title ?? '');
     _descController = TextEditingController(text: widget.oldCard?.description ?? '');
 
-    // NEW: clear the error as soon as the user types again
     _titleController.addListener(() {
       if (_titleError && _titleController.text.trim().isNotEmpty) {
         setState(() => _titleError = false);
@@ -75,12 +73,46 @@ class _CardDialogState extends State<CardDialog> {
       description: _descController.text.trim(),
     );
     switch(widget.cardDialogMode) {
-      case CardDialogMode.add:  vm.addCard(newCard); break;
-      case CardDialogMode.edit: vm.editCard(widget.oldCard!, newCard); break;
+      case CardDialogMode.add:  ref.read(groupsProvider.notifier).addCard(newCard); break;
+      case CardDialogMode.edit: ref.read(groupsProvider.notifier).editCard(widget.oldCard!, newCard); break;
     }
   }
 
-  Widget buildEditCardDialog(BuildContext context) {
+  Widget build3DButton({required String text, required Color buttonColor, required Color shadowColor, required VoidCallback onTap}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: buttonColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            offset: const Offset(0, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Center(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Dialog(
       backgroundColor: Colors.transparent,
       insetPadding: const EdgeInsets.symmetric(horizontal: 16),
@@ -201,7 +233,6 @@ class _CardDialogState extends State<CardDialog> {
                     buttonColor: const Color(0xFF30BE91),
                     shadowColor: const Color(0xFF2E6252),
                     onTap: () async {
-                      // NEW: block submission if validation fails
                       if (!_validate()) return;
                       await _handleApply();
                       if (mounted) Navigator.pop(context); 
@@ -214,43 +245,5 @@ class _CardDialogState extends State<CardDialog> {
         ),
       ),
     );
-  }
-
-  Widget build3DButton({required String text, required Color buttonColor, required Color shadowColor, required VoidCallback onTap}) {
-    return Container(
-      decoration: BoxDecoration(
-        color: buttonColor,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: shadowColor,
-            offset: const Offset(0, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(16),
-          child: Center(
-            child: Text(
-              text,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return buildEditCardDialog(context);
   }
 }

@@ -13,7 +13,7 @@ class PairItem {
   const PairItem({required this.pairId, required this.label});
 }
 
-class PairingViewModel extends ChangeNotifier {
+class PairingProvider extends ChangeNotifier {
   final Random _random = Random();
 
   List<PairItem> leftItems = [];
@@ -40,7 +40,7 @@ class PairingViewModel extends ChangeNotifier {
   int get total => _allCards.length;
   int get progress => totalMatched;
 
-  PairingViewModel(Group? group) {
+  PairingProvider(Group? group) {
     _allCards = (group?.cards ?? [])
         .where((c) => c.title.trim().isNotEmpty && c.description.trim().isNotEmpty)
         .toList()
