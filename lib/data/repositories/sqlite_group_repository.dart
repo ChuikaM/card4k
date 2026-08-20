@@ -43,14 +43,7 @@ class SqliteGroupRepository implements GroupRepository {
       onCreate: (db, version) async {
         await db.execute(_sql['group/create_table.sql']!);
         await db.execute(_sql['card/create_table.sql']!);
-        await db.rawInsert(
-          _sql['group/001_add_group.sql']!,
-          ['English', Colors.teal.toARGB32()],
-        );
-      },
-      onOpen: (db) async {
-        // e.g. await db.execute('PRAGMA foreign_keys = ON;');
-      },
+      }
     );
   }
 
@@ -82,10 +75,26 @@ class SqliteGroupRepository implements GroupRepository {
     await _database.rawDelete('DELETE FROM cards WHERE group_name = ?', [groupName]);
     await _database.rawDelete(_sql['group/005_remove_group.sql']!, [groupName]);
   }
-  @override
+    @override
   Future<List<Group>> fetchGroups() async {
     final rows = await _database.rawQuery(_sql['group/004_get_groups.sql']!);
-    return rows.map((map) => Group.fromMap(map)).toList();
+    final groups = <Group>[];
+
+    for (final row in rows) {
+      final name = row['name'] as String;
+      final color = row['color'] != null ? Color(row['color'] as int) : Color(0xFF4CAF50);
+      
+      final cardRows = await _database.rawQuery(_sql['card/004_get_cards.sql']!, [name]);
+      final cards = cardRows.map((map) => c.Card.fromMap(map)).toList();
+
+      groups.add(Group(
+        cards: cards,
+        name: name,
+        color: color,
+      ));
+    }
+
+    return groups;
   }
   @override
   Future<Group?> fetchGroupByName(String name) async {

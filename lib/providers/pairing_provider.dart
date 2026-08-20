@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-
 import 'package:card4k/models/group.dart';
 
 enum PairItemState { normal, selected, matched, failed }
@@ -25,6 +24,8 @@ class PairingProvider extends ChangeNotifier {
 
   final Set<int> _matchedIds = {};
   final Set<int> _failedIds = {};
+  
+  final Set<String> _failedItems = {};
 
   int? selectedLeftId;
   int? selectedRightId;
@@ -61,6 +62,7 @@ class PairingProvider extends ChangeNotifier {
 
     _matchedIds.clear();
     _failedIds.clear();
+    _failedItems.clear();
     selectedLeftId = null;
     selectedRightId = null;
     locked = false;
@@ -84,7 +86,9 @@ class PairingProvider extends ChangeNotifier {
   bool isEnabled(int id) => !locked && !_matchedIds.contains(id) && !_failedIds.contains(id);
 
   PairItemState stateFor(int id, {required bool isLeft}) {
-    if (_failedIds.contains(id)) return PairItemState.failed;
+    final itemKey = '${isLeft ? 'L' : 'R'}_$id';
+    
+    if (_failedItems.contains(itemKey)) return PairItemState.failed;
     if (_matchedIds.contains(id)) return PairItemState.matched;
     final selected = isLeft ? selectedLeftId == id : selectedRightId == id;
     return selected ? PairItemState.selected : PairItemState.normal;
@@ -113,7 +117,12 @@ class PairingProvider extends ChangeNotifier {
 
     mistakes++;
     locked = true;
-    _failedIds..add(left)..add(right);
+
+    _failedIds.add(left);
+    _failedIds.add(right);
+    _failedItems.add('L_$left');
+    _failedItems.add('R_$right');
+    
     selectedLeftId = null;
     selectedRightId = null;
     notifyListeners();
@@ -121,6 +130,8 @@ class PairingProvider extends ChangeNotifier {
     _timer?.cancel();
     _timer = Timer(const Duration(seconds: 1), () {
       locked = false;
+      _failedIds.clear();
+      _failedItems.clear();
       notifyListeners();
     });
   }

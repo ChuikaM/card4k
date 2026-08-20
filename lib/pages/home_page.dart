@@ -1,3 +1,4 @@
+import 'package:card4k/constants/colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -6,11 +7,12 @@ import 'package:card4k/pages/pairing_page.dart';
 import 'package:card4k/pages/selection_page.dart';
 
 import 'package:card4k/widgets/burgers/groups_burger.dart';
-import 'package:card4k/widgets/burgers/new_group_burger.dart';
+import 'package:card4k/widgets/burgers/new_or_edit_group_burger.dart';
 import 'package:card4k/widgets/dialog/card_dialog.dart';
 import 'package:card4k/widgets/widget.dart';
 
 import 'package:card4k/providers/groups_provider.dart';
+import 'package:card4k/models/group.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,18 +21,27 @@ class HomePage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const Color backgroundColor = Color(0xFF303030);
-    final mainMenu = Column(
-      children: [
-        HomeTitle(hasGroups: true),
-        HomeMain(),
-        const Spacer()
-      ]
+    var provider = ref.watch(groupsProvider);
+    final mainMenu = provider.when(
+      data: (data) { 
+        var group = data.current;
+        if(group == null) return HomeDefault();
+
+        return Column(
+          children: [
+            HomeTitle(group: group),
+            HomeMain(),
+            const Spacer()
+          ]
+        );
+      },
+      error: (error, stackTrace) => Center(child: Text("Error: ${error.toString()}"),),
+      loading: () => Center(child: CircularProgressIndicator(),),
     );
 
     return SafeArea(
       child: Scaffold(
-        backgroundColor: backgroundColor,
+        backgroundColor: AppColors.primaryBackground,
         body: mainMenu
       ),
     );
@@ -38,22 +49,15 @@ class HomePage extends ConsumerWidget {
 }
 
 class HomeTitle extends ConsumerWidget {
-  final bool hasGroups;
-
-  final FocusNode focusNode = FocusNode();
+  final FocusNode focusModalNode = FocusNode();
   final FocusNode focusNodeTitle = FocusNode();
   final FocusNode focusNodeDescription = FocusNode();
+  final Group group;
 
-  HomeTitle({super.key, required this.hasGroups});
+  HomeTitle({super.key, required this.group});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    var provider = ref.watch(groupsProvider);
-
-    double availableHeight = MediaQuery.sizeOf(context).height;
-    double availableWidth = MediaQuery.sizeOf(context).width;
-
-    final borderDecoration = BoxDecoration(
+  BoxDecoration borderDecoration() {
+    return BoxDecoration(
       boxShadow: [
         BoxShadow(
           color: Color(0xFF7F7F7F),
@@ -65,11 +69,12 @@ class HomeTitle extends ConsumerWidget {
       borderRadius: BorderRadius.circular(15.0),
       color: Color(0xFFD9D9D9),
     );
-
-    final groupButton = Ink(
+  }
+  Widget groupButton(BuildContext context) {
+    return Ink(
       width: 128,
       height: 32,
-      decoration: borderDecoration,
+      decoration: borderDecoration(),
       child: InkWell(
         onTap: () => showGeneralDialog(
           context: context,
@@ -91,34 +96,32 @@ class HomeTitle extends ConsumerWidget {
         borderRadius: BorderRadius.circular(15),
         child: Padding(
           padding: EdgeInsetsGeometry.symmetric(vertical: 1, horizontal: 10),
-          child: provider.when(
-            loading: () => Text("Loading"),
-            data: (data) => Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              spacing: 10,
-              children: [
-                CircleAvatar(
-                  radius: 12,
-                  backgroundColor: data.current.color,
-                ),
-                Text(
-                  data.current.name, 
-                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
-                )
-              ],    
-            ),
-            error:(error, stackTrace) => Text("Error"),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            spacing: 10,
+            children: [
+              CircleAvatar(
+                radius: 12,
+                backgroundColor: group.color,
+              ),
+              Text(
+                group.name, 
+                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+              )
+            ],    
           )
         )
       )
     );
-    final cardsButton = Ink(
-      decoration: borderDecoration,
+  }
+  Widget cardsButton(BuildContext context) {
+    return Ink(
+      decoration: borderDecoration(),
       child: InkWell(
         onTap: () => buildAnimatedPage(context, CardPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
         child: SizedBox(
-          width: availableWidth / 2 - 20,
+          width: MediaQuery.sizeOf(context).width / 2 - 20,
           child: Padding(
             padding: EdgeInsetsGeometry.all(10),
             child: Column(
@@ -128,19 +131,17 @@ class HomeTitle extends ConsumerWidget {
                 SvgPicture.asset("assets/icon/card.svg"),
                 SizedBox(height: 10,),
                 Text("Cards", style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.bold),),
-                provider.when(
-                  loading: () => Text("Total: loading", style: TextStyle(color: Colors.white, fontSize: 12)),
-                  error: (error, stackTrace) => Text("Total: 0", style: TextStyle(color: Colors.white, fontSize: 12)),
-                  data: (data) => Text("Total: ${data.current.getTotalCards()}", style: TextStyle(color: Colors.white, fontSize: 12),),
-                )
+                Text("Total: ${group.getTotalCards()}", style: TextStyle(color: Colors.white, fontSize: 12),)
               ],
             ),
           )
         ),
       ),
     );
-    final newCardButton = Ink(
-      decoration: borderDecoration,
+  }
+  Widget newCardButton(BuildContext context) {
+    return Ink(
+      decoration: borderDecoration(),
       child: InkWell(
         onTap: () => showDialog(
           context: context,
@@ -180,7 +181,7 @@ class HomeTitle extends ConsumerWidget {
         ),
         borderRadius: BorderRadius.circular(15),
         child: SizedBox(
-          width: availableWidth / 2 - 20,
+          width: MediaQuery.sizeOf(context).width / 2 - 20,
           child: Padding(
             padding: EdgeInsetsGeometry.all(10),
             child: Column(
@@ -195,112 +196,112 @@ class HomeTitle extends ConsumerWidget {
         ),
       ),
     );
-    if(hasGroups) {
-      return SizedBox(
-        height: availableHeight / 4.2,
-        child: Material(
-          color: Color(0xFF212121),
-          borderRadius: BorderRadiusGeometry.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
-                child: Row(
-                  mainAxisAlignment: hasGroups ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
-                  children: [
-                    if(hasGroups)
-                      IconButton(
-                        onPressed: () => showGeneralDialog(
-                          context: context,
-                          barrierDismissible: false,
-                          barrierLabel: 'Dismiss Modal',
-                          barrierColor: Color(0xA0212121),
-                          transitionDuration: const Duration(milliseconds: 250),
-                          transitionBuilder: (context, animation, secondaryAnimation, child) {
-                            return SlideTransition(
-                              position: Tween<Offset>(
-                                begin: const Offset(0, -1),
-                                end: Offset.zero,
-                              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
-                              child: child,
-                            );
-                          },
-                          pageBuilder: (context, animation, secondaryAnimation) {
-                            return SafeArea(
-                              child: Align(
-                                alignment: Alignment.topCenter,
-                                child: GestureDetector(
-                                  onTap: () {
-                                    if (!focusNode.hasFocus) {
-                                      Navigator.pop(context);
-                                    }
-                                    else {
-                                      focusNode.unfocus();
-                                    }
-                                  },
-                                  child: Container(
-                                    color: Colors.transparent,
-                                    width: double.infinity,
-                                    height: double.infinity,
-                                    alignment: Alignment.topCenter,
-                                    child: GestureDetector(
-                                      onTap: () {}, 
-                                      behavior: HitTestBehavior.opaque,
-                                      child: BurgerNewGroup(
-                                        burgerNewGroupMode: BurgerNewGroupMode.edit, 
-                                        focusNode: focusNode,
-                                        onSubmit: ref.read(groupsProvider.notifier).editGroup,
-                                        onDelete: ref.read(groupsProvider.notifier).deleteGroup,
+  }
+  
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SizedBox(
+      height: MediaQuery.sizeOf(context).height / 4.2,
+      child: Material(
+        color: Color(0xFF212121),
+        borderRadius: BorderRadiusGeometry.only(bottomLeft: Radius.circular(20), bottomRight: Radius.circular(20)),
+       
+            child:  Column(
+              children: [
+                Padding(
+                  padding: EdgeInsetsGeometry.symmetric(horizontal: 10),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                        IconButton(
+                          onPressed: () => showGeneralDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            barrierLabel: 'Dismiss Modal',
+                            barrierColor: Color(0xA0212121),
+                            transitionDuration: const Duration(milliseconds: 250),
+                            transitionBuilder: (context, animation, secondaryAnimation, child) {
+                              return SlideTransition(
+                                position: Tween<Offset>(
+                                  begin: const Offset(0, -1),
+                                  end: Offset.zero,
+                                ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+                                child: child,
+                              );
+                            },
+                            pageBuilder: (context, animation, secondaryAnimation) {
+                              return SafeArea(
+                                child: Align(
+                                  alignment: Alignment.topCenter,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (!focusModalNode.hasFocus) {
+                                        Navigator.pop(context);
+                                      }
+                                      else {
+                                        focusModalNode.unfocus();
+                                      }
+                                    },
+                                    child: Container(
+                                      color: Colors.transparent,
+                                      width: double.infinity,
+                                      height: double.infinity,
+                                      alignment: Alignment.topCenter,
+                                      child: GestureDetector(
+                                        onTap: () {}, 
+                                        behavior: HitTestBehavior.opaque,
+                                        child: BurgerNewGroup(
+                                          burgerNewGroupMode: BurgerNewGroupMode.edit, 
+                                          focusNode: focusModalNode,
+                                          onSubmit: ref.read(groupsProvider.notifier).editGroup,
+                                          onDelete: ref.read(groupsProvider.notifier).deleteGroup,
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
+                              );
+                            },
+                          ),
+                          icon: const Icon(
+                            Icons.settings,
+                            color: Colors.white,
+                            shadows: [
+                              Shadow(
+                                color: Color(0xFFD9D9D9),
+                                offset: Offset(0, 2),
+                                blurRadius: 0,
                               ),
-                            );
-                          },
+                            ],
+                          ),
+                          iconSize: 32, 
                         ),
-                        icon: const Icon(
-                          Icons.settings,
-                          color: Colors.white,
-                          shadows: [
-                            Shadow(
-                              color: Color(0xFFD9D9D9),
-                              offset: Offset(0, 2),
-                              blurRadius: 0,
-                            ),
-                          ],
-                        ),
-                        iconSize: 32, 
-                      ),
-                    Spacer(), 
-                    groupButton
-                  ],
-                ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 5),            
-                child: Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    spacing: 20,
-                    children: [
-                      Expanded(child: AspectRatio(aspectRatio: 4/3, child: cardsButton)),
-                      Expanded(child: AspectRatio(aspectRatio: 4/3, child: newCardButton)),              
+                      Spacer(), 
+                      groupButton(context)
                     ],
                   ),
-                )           
-              ),
-              const Spacer() 
-            ]
-          ), 
-        )
-      );
-    }
-    else {
-      return SizedBox();
-    }
+                ),
+                const Spacer(),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 0, horizontal: 5),            
+                  child: Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      spacing: 20,
+                      children: [
+                        Expanded(child: AspectRatio(aspectRatio: 4/3, child: cardsButton(context))),
+                        Expanded(child: AspectRatio(aspectRatio: 4/3, child: newCardButton(context))),              
+                      ],
+                    ),
+                  )           
+                ),
+                const Spacer() 
+              ]
+            )
+          
+      )
+    );
   }
 }
 
@@ -325,7 +326,7 @@ class HomeMain extends ConsumerWidget {
     final pairingButton = Ink(
       decoration: borderDecoration,
       child: InkWell(
-        onTap: () {}, //buildAnimatedPage(context, PairingPage(onGoBack: () => Navigator.pop(context))),
+        onTap: () => buildAnimatedPage(context, PairingPage(onGoBack: () => Navigator.pop(context))),
         borderRadius: BorderRadius.circular(15),
           child: Padding(
             padding: EdgeInsetsGeometry.all(20),
@@ -383,6 +384,134 @@ class HomeMain extends ConsumerWidget {
           SizedBox(height: 128, child: selectionButton,)
         ],
       ),
+    );
+  }
+}
+
+class HomeDefault extends ConsumerWidget {
+  const HomeDefault({super.key});
+
+  Widget createGroupButton(BuildContext context, WidgetRef ref) {
+    return GestureDetector(
+      onTap: () {
+        final focusNode = FocusNode();
+        showGeneralDialog(
+          context: context,
+          barrierDismissible: false,
+          barrierLabel: 'Dismiss Modal',
+          barrierColor: const Color(0xA0212121),
+          transitionDuration: const Duration(milliseconds: 250),
+          transitionBuilder: (context, animation, secondaryAnimation, child) {
+            return SlideTransition(
+              position: Tween<Offset>(
+                begin: const Offset(0, -1),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(parent: animation, curve: Curves.easeOut)),
+              child: child,
+            );
+          },
+          pageBuilder: (context, animation, secondaryAnimation) {
+            return SafeArea(
+              child: Align(
+                alignment: Alignment.topCenter,
+                child: GestureDetector(
+                  onTap: () {
+                    if (!focusNode.hasFocus) {
+                      Navigator.pop(context);
+                    } else {
+                      focusNode.unfocus();
+                    }
+                  },
+                  child: Container(
+                    color: Colors.transparent,
+                    width: double.infinity,
+                    height: double.infinity,
+                    alignment: Alignment.topCenter,
+                    child: GestureDetector(
+                      onTap: () {}, 
+                      behavior: HitTestBehavior.opaque,
+                      child: BurgerNewGroup(
+                        burgerNewGroupMode: BurgerNewGroupMode.add, 
+                        focusNode: focusNode,
+                        onSubmit: ref.read(groupsProvider.notifier).addGroup,
+                        onDelete: (_){},
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+        decoration: BoxDecoration(
+          color: const Color(0xFF30BE91),
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0xFF2E6252),
+              offset: Offset(0, 6),
+              blurRadius: 6.0,
+              blurStyle: BlurStyle.inner,
+            )
+          ],
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.add, color: Colors.white, size: 28),
+            SizedBox(width: 12),
+            Text(
+              "Create Group",
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  @override Widget build(BuildContext context, WidgetRef ref) {
+    return Padding(
+      padding: EdgeInsetsGeometry.symmetric(horizontal: 20),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.style_outlined, 
+              size: 80,
+              color: Colors.white24,
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "Create Your First Group",
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              "Tap the button below to get started!",
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 16,
+                height: 1.5, 
+              ),
+            ),
+            const SizedBox(height: 32),
+            createGroupButton(context, ref),
+          ],
+        ),
+      )
     );
   }
 }

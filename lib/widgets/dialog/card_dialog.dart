@@ -11,12 +11,14 @@ class CardDialog extends ConsumerStatefulWidget {
   final c.Card? oldCard;
   final FocusNode focusNodeTitle;
   final FocusNode focusNodeDescription;
+ 
+
   const CardDialog({
     super.key, 
     this.oldCard, 
     required this.cardDialogMode, 
     required this.focusNodeTitle, 
-    required this.focusNodeDescription
+    required this.focusNodeDescription,
   });
 
   @override
@@ -72,9 +74,29 @@ class _CardDialogState extends ConsumerState<CardDialog> {
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
     );
+    
+    bool success = false;
+
     switch(widget.cardDialogMode) {
-      case CardDialogMode.add:  ref.read(groupsProvider.notifier).addCard(newCard); break;
-      case CardDialogMode.edit: ref.read(groupsProvider.notifier).editCard(widget.oldCard!, newCard); break;
+      case CardDialogMode.add:
+        success = await ref.read(groupsProvider.notifier).addCard(newCard); 
+        break;
+      case CardDialogMode.edit:
+        success = await ref.read(groupsProvider.notifier).editCard(widget.oldCard!, newCard); 
+        break;
+    }
+
+    if (success) {
+      if (mounted) Navigator.pop(context); 
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ошибка: Сначала создайте или выберите группу!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -136,7 +158,6 @@ class _CardDialogState extends ConsumerState<CardDialog> {
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(10),
-                        // NEW: red border on error
                         border: Border.all(
                           color: _titleError ? const Color(0xFFC92F2F) : const Color(0xFF7F7F7F),
                           width: _titleError ? 2 : 1,
@@ -154,7 +175,6 @@ class _CardDialogState extends ConsumerState<CardDialog> {
                         ),
                       ),
                     ),
-                    // NEW: error message
                     if (_titleError)
                       const Align(
                         alignment: Alignment.centerLeft,
@@ -172,7 +192,6 @@ class _CardDialogState extends ConsumerState<CardDialog> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(10),
-                          // NEW: red border on error
                           border: Border.all(
                             color: _descError ? const Color(0xFFC92F2F) : const Color(0xFF7F7F7F),
                             width: _descError ? 2 : 1,
@@ -194,7 +213,6 @@ class _CardDialogState extends ConsumerState<CardDialog> {
                         ),
                       ),
                     ),
-                    // NEW: error message
                     if (_descError)
                       const Align(
                         alignment: Alignment.centerLeft,
@@ -235,7 +253,6 @@ class _CardDialogState extends ConsumerState<CardDialog> {
                     onTap: () async {
                       if (!_validate()) return;
                       await _handleApply();
-                      if (mounted) Navigator.pop(context); 
                     },
                   ),
                 ),

@@ -31,6 +31,9 @@ class _SelectionPageState extends ConsumerState<SelectionPage> {
     return provider.when(
       data:(data) {
         final group = data.current;
+        if (group == null) {
+          return const Text('No groups. Create one!');
+        }
 
         final contentHash = group.cards.fold<int>(
           0,
@@ -49,7 +52,7 @@ class _SelectionPageState extends ConsumerState<SelectionPage> {
           ),
         );
       }, 
-      error:(error, stackTrace) => Text("Error"), 
+      error:(error, stackTrace) => Text("Error: ${error.toString()}"), 
       loading: () => const Scaffold(
         body: Center(child: CircularProgressIndicator()),
       )

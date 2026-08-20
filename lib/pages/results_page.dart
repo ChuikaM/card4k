@@ -27,14 +27,27 @@ class ResultPage extends StatelessWidget {
       );
     }
     
-    sections.add(
-      PieChartSectionData(
-        color: const Color(0xFF30BE91),
-        value: correctPairs > 0 ? correctPairs.toDouble() : 1.0, 
-        radius: 120,
-        showTitle: false,
-      ),
-    );
+    if (correctPairs > 0) {
+      sections.add(
+        PieChartSectionData(
+          color: const Color(0xFF30BE91),
+          value: correctPairs.toDouble(),
+          radius: 120,
+          showTitle: false,
+        ),
+      );
+    }
+    
+    if (sections.isEmpty) {
+      sections.add(
+        PieChartSectionData(
+          color: Colors.grey,
+          value: 1.0,
+          radius: 120,
+          showTitle: false,
+        ),
+      );
+    }
 
     final pieChart = SizedBox(
       width: 200,

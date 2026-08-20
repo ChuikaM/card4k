@@ -2,7 +2,7 @@ import 'package:card4k/providers/groups_provider.dart';
 import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 
-import 'package:card4k/widgets/burgers/new_group_burger.dart';
+import 'package:card4k/widgets/burgers/new_or_edit_group_burger.dart';
 
 import 'package:card4k/models/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -99,6 +99,9 @@ class GroupsButtons extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         child: provider.when(
           data:(data) {
+            var group = data.current;
+            if(group == null) return SizedBox();
+
             final groups = data.groups;
             return Row(
               children: [
@@ -106,7 +109,7 @@ class GroupsButtons extends ConsumerWidget {
                   buildGroupItem(
                     name: groups[i].name,
                     color: groups[i].color,
-                    isActive: groups[i].name == data.current.name,
+                    isActive: groups[i].name == group.name,
                     onTapped: () => ref.read(groupsProvider.notifier).selectGroup(groups[i].name),
                   ),
                   if (i < groups.length - 1) const SizedBox(width: 12),
@@ -114,7 +117,7 @@ class GroupsButtons extends ConsumerWidget {
               ],
             );
           }, 
-          error:(error, stackTrace) => Text("Error"), 
+          error:(error, stackTrace) => Text("Error: ${error.toString()}"), 
           loading: () => Text("Loading")
         )
       ),
@@ -172,7 +175,7 @@ class AddGroupButton extends ConsumerWidget {
                       child: BurgerNewGroup(
                         burgerNewGroupMode: BurgerNewGroupMode.add, 
                         focusNode: focusNode, 
-                        onSubmit: (_, newest) => groupsNotifier.addGroup(newest),
+                        onSubmit: (newest) => groupsNotifier.addGroup(newest),
                         onDelete: (_) {},
                       ),
                     ),

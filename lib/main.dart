@@ -1,3 +1,4 @@
+import 'package:card4k/constants/colors.dart';
 import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
@@ -26,16 +27,14 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const Color backgroundColor = Color(0xFF303030);
-
     return MaterialApp(
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: backgroundColor,
-        canvasColor: backgroundColor, 
+        scaffoldBackgroundColor: AppColors.primaryBackground,
+        canvasColor: AppColors.primaryBackground, 
       ),
       home: Scaffold(
-        backgroundColor: const Color(0xFF212121),
+        backgroundColor: AppColors.secondaryBackground,
         body: SafeArea(
           child: HomePage(),
         ),

@@ -276,16 +276,19 @@ class _CardPageState extends ConsumerState<CardPage> {
         backgroundColor: backgroundColor,
         body: provider.when(
           data:(data) {
-            _updateLocalState(data.current);
+            var group = data.current;
+            if(group == null) return Text("Not loaded, create group");
+
+            _updateLocalState(group);
             final cardWidget = Column(
               children: [
-                buildProgressBar(context, widget.onGoBack, current: index + 1, total: data.current.getTotalCards()),
-                buildCardContent(context, data.current),
+                buildProgressBar(context, widget.onGoBack, current: index + 1, total: group.getTotalCards()),
+                buildCardContent(context, group),
               ],
             );
             return cardWidget;
           }, 
-          error:(error, stackTrace) => Text("Error"), 
+          error:(error, stackTrace) => Text("Error: ${error.toString()}"), 
           loading:() => Text("Loading"),
         )
       ),
