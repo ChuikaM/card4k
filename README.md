@@ -19,13 +19,13 @@ A clean, minimalist flashcard application built with Flutter. Master your learni
 
 ## Screenshots
 
-No Groups
+<h1>No Groups</h1>
 <p align="center">
 	<img src="screenshots/001-no-groups.png" width="250" alt="Page without groups" />
 	<img src="screenshots/002-no-groups-add.png" width="250" alt="Burger with adding initial group" />
 </p>
 
-Home
+<h1>Home</h1>
 <p align="center">
 	<img src="screenshots/home/001-home.png" width="250" alt="Main page" />
 	<img src="screenshots/home/002-home-add-card.png" width="250" alt="Add new card at home page" />
@@ -34,7 +34,7 @@ Home
 	<img src="screenshots/home/005-home-add-group.png" width="250" alt="Add new group at home page" />
 </p>
 
-Cards
+<h1Cards</h1>
 <p align="center">
 	<img src="screenshots/cards/001-cards.png" width="250" alt="Cards page" />
 	<img src="screenshots/cards/002-cards-hide.png" width="250" alt="Hide card's description at cards page" />
@@ -42,7 +42,7 @@ Cards
     <img src="screenshots/cards/004-no-cards.png" width="250" alt="No cards at cards page" />
 </p>
 
-Pairing
+<h1>Pairing</h1>
 <p align="center">
 	<img src="screenshots/pairing/001-pairing.png" width="250" alt="Pairing page" />
 	<img src="screenshots/pairing/002-pairing-selection-correct.png" width="250" alt="Selection correct at pairing page" />
@@ -50,7 +50,7 @@ Pairing
     <img src="screenshots/pairing/004-pairing-no-cards.png" width="250" alt="No cards at pairing page" />
 </p>
 
-Selection
+<h1>Selection</h1>
 <p align="center">
 	<img src="screenshots/selection/001-selection.png" width="250" alt="Selection page" />
 	<img src="screenshots/selection/002-selection-correct.png" width="250" alt="Selection correct at selection page" />
@@ -58,7 +58,7 @@ Selection
     <img src="screenshots/selection/004-selection-no-cards.png" width="250" alt="No cards at selection page" />
 </p>
 
-Results
+<h1>Results</h1>
 <p align="center">
 	<img src="screenshots/results/001-results-all-correct.png" width="250" alt="All correct results at results page" />
 	<img src="screenshots/results/002-results-partly.png" width="250" alt="Partly correct results at results page" />
