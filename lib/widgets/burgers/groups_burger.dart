@@ -1,10 +1,8 @@
 import 'package:card4k/providers/groups_provider.dart';
-import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 
 import 'package:card4k/widgets/burgers/new_or_edit_group_burger.dart';
 
-import 'package:card4k/models/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class BurgerGroups extends StatelessWidget {

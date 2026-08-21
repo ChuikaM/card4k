@@ -5,7 +5,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 import 'package:card4k/models/group.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:path/path.dart';
 
 enum BurgerNewGroupMode { add, edit }
 
