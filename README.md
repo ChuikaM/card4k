@@ -34,7 +34,7 @@ A clean, minimalist flashcard application built with Flutter. Master your learni
 	<img src="screenshots/home/005-home-add-group.png" width="250" alt="Add new group at home page" />
 </p>
 
-<h1Cards</h1>
+<h1>Cards</h1>
 <p align="center">
 	<img src="screenshots/cards/001-cards.png" width="250" alt="Cards page" />
 	<img src="screenshots/cards/002-cards-hide.png" width="250" alt="Hide card's description at cards page" />
