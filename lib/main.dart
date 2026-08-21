@@ -1,8 +1,11 @@
-import 'package:card4k/ui/page/home/view.dart';
+import 'package:card4k/constants/colors.dart';
+import 'package:card4k/providers/sqlite_group_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 
-import 'package:card4k/core/group_provider.dart';
+import 'package:card4k/pages/home_page.dart';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,55 +16,29 @@ void main() async {
     statusBarBrightness: Brightness.dark,
   ));
 
-  final groupProvider = GroupProvider();
-  
-  final initFuture = groupProvider.init(); 
+  final container = ProviderContainer();
+  await container.read(sqliteGroupProvider).init();
 
-  runApp(MainApp(
-    groupProvider: groupProvider,
-    initFuture: initFuture,
-  ));
+  runApp(UncontrolledProviderScope(container: container, child: MainApp()));
 }
 
-class MainApp extends StatefulWidget {
-  final GroupProvider groupProvider;
-  final Future<void> initFuture;
-
-  const MainApp({super.key, required this.groupProvider, required this.initFuture});
+class MainApp extends ConsumerWidget {
+  const MainApp({super.key});
 
   @override
-  State<MainApp> createState() => _MainAppState();
-}
-
-class _MainAppState extends State<MainApp> {
-  @override
-  Widget build(BuildContext context) {
-    const Color backgroundColor = Color(0xFF303030);
-
+  Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
       theme: ThemeData(
         brightness: Brightness.dark,
-        scaffoldBackgroundColor: backgroundColor,
-        canvasColor: backgroundColor, 
+        scaffoldBackgroundColor: AppColors.primaryBackground,
+        canvasColor: AppColors.primaryBackground, 
       ),
-      home: FutureBuilder<void>(
-        future: widget.initFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(color: Color(0xFF30BE91)),
-              ),
-            );
-          }
-          return Scaffold(
-            backgroundColor: const Color(0xFF212121),
-            body: SafeArea(
-              child: HomePage(groupProvider: widget.groupProvider),
-            ),
-          );
-        },
-      ),
+      home: Scaffold(
+        backgroundColor: AppColors.secondaryBackground,
+        body: SafeArea(
+          child: HomePage(),
+        ),
+      )
     );
   }
 }

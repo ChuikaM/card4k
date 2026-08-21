@@ -1,0 +1,266 @@
+import 'package:card4k/providers/groups_provider.dart';
+import 'package:flutter/material.dart';
+
+import 'package:card4k/models/card.dart' as c;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+enum CardDialogMode { add, edit }
+
+class CardDialog extends ConsumerStatefulWidget {
+  final CardDialogMode cardDialogMode;
+  final c.Card? oldCard;
+  final FocusNode focusNodeTitle;
+  final FocusNode focusNodeDescription;
+ 
+
+  const CardDialog({
+    super.key, 
+    this.oldCard, 
+    required this.cardDialogMode, 
+    required this.focusNodeTitle, 
+    required this.focusNodeDescription,
+  });
+
+  @override
+  ConsumerState<CardDialog> createState() => _CardDialogState();
+}
+
+class _CardDialogState extends ConsumerState<CardDialog> {
+  late final TextEditingController _titleController;
+  late final TextEditingController _descController;
+
+  bool _titleError = false;
+  bool _descError = false;
+
+  @override
+  void initState() { 
+    super.initState();   
+    _titleController = TextEditingController(text: widget.oldCard?.title ?? '');
+    _descController = TextEditingController(text: widget.oldCard?.description ?? '');
+
+    _titleController.addListener(() {
+      if (_titleError && _titleController.text.trim().isNotEmpty) {
+        setState(() => _titleError = false);
+      }
+    });
+    _descController.addListener(() {
+      if (_descError && _descController.text.trim().isNotEmpty) {
+        setState(() => _descError = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descController.dispose();
+    super.dispose();
+  }
+
+  bool _validate() {
+    final titleEmpty = _titleController.text.trim().isEmpty;
+    final descEmpty = _descController.text.trim().isEmpty;
+
+    setState(() {
+      _titleError = titleEmpty;
+      _descError = descEmpty;
+    });
+
+    return !titleEmpty && !descEmpty;
+  }
+
+  Future<void> _handleApply() async {
+    final newCard = c.Card(
+      title: _titleController.text.trim(),
+      description: _descController.text.trim(),
+    );
+    
+    bool success = false;
+
+    switch(widget.cardDialogMode) {
+      case CardDialogMode.add:
+        success = await ref.read(groupsProvider.notifier).addCard(newCard); 
+        break;
+      case CardDialogMode.edit:
+        success = await ref.read(groupsProvider.notifier).editCard(widget.oldCard!, newCard); 
+        break;
+    }
+
+    if (success) {
+      if (mounted) Navigator.pop(context); 
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Ошибка: Сначала создайте или выберите группу!'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget build3DButton({required String text, required Color buttonColor, required Color shadowColor, required VoidCallback onTap}) {
+    return Container(
+      decoration: BoxDecoration(
+        color: buttonColor,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: shadowColor,
+            offset: const Offset(0, 4),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Center(
+            child: Text(
+              text,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: const EdgeInsets.symmetric(horizontal: 16),
+      child: SizedBox(
+        width: 312,
+        height: 440,
+        child: Column(
+          children: [
+            Expanded(
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFD9D9D9),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 8),
+                    Container(
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _titleError ? const Color(0xFFC92F2F) : const Color(0xFF7F7F7F),
+                          width: _titleError ? 2 : 1,
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _titleController,
+                        focusNode: widget.focusNodeTitle,
+                        style: const TextStyle(color: Colors.black, fontSize: 16),
+                        decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                          border: InputBorder.none,
+                          hintText: "Word/Term",
+                          hintStyle: TextStyle(color: Color(0xFF333333)),
+                        ),
+                      ),
+                    ),
+                    if (_titleError)
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text(
+                            "Word/Term cannot be empty",
+                            style: TextStyle(color: Color(0xFFC92F2F), fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: _descError ? const Color(0xFFC92F2F) : const Color(0xFF7F7F7F),
+                            width: _descError ? 2 : 1,
+                          ),
+                        ),
+                        child: TextField(
+                          controller: _descController,
+                          focusNode: widget.focusNodeDescription,
+                          maxLines: null,
+                          expands: true,
+                          textAlignVertical: TextAlignVertical.top,
+                          style: const TextStyle(color: Colors.black, fontSize: 16),
+                          decoration: const InputDecoration(
+                            contentPadding: EdgeInsets.all(14),
+                            border: InputBorder.none,
+                            hintText: "Description",
+                            hintStyle: TextStyle(color: Color(0xFF333333)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    if (_descError)
+                      const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Padding(
+                          padding: EdgeInsets.only(top: 4),
+                          child: Text(
+                            "Description cannot be empty",
+                            style: TextStyle(color: Color(0xFFC92F2F), fontSize: 12),
+                          ),
+                        ),
+                      ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(
+                  width: 140,
+                  height: 46,
+                  child: build3DButton(
+                    text: "cancel",
+                    buttonColor: const Color(0xFFC92F2F),
+                    shadowColor: const Color(0xFF9C2525),
+                    onTap: () => Navigator.pop(context),
+                  ),
+                ),
+                SizedBox(
+                  width: 140,
+                  height: 46,
+                  child: build3DButton(
+                    text: widget.cardDialogMode == CardDialogMode.add ? "create" : "apply",
+                    buttonColor: const Color(0xFF30BE91),
+                    shadowColor: const Color(0xFF2E6252),
+                    onTap: () async {
+                      if (!_validate()) return;
+                      await _handleApply();
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
