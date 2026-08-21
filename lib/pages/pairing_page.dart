@@ -48,7 +48,26 @@ class _PairingPageState extends ConsumerState<PairingPage> {
               buildProgressBar(context, widget.onGoBack, current: _vm.progress, total: _vm.total),
               Expanded(
                 child: _vm.total == 0
-                    ? const Center(child: Text("No cards available", style: TextStyle(color: Colors.white70)))
+                    ? Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.style_outlined, size: 64, color: Colors.white54),
+                            const SizedBox(height: 16),
+                            const Text(
+                              "No cards available for pairing",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white70, fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            const Text(
+                              "Add cards with title and description first.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(color: Colors.white54, fontSize: 14),
+                            ),
+                          ],
+                        ),
+                      )
                     : _buildBoard(),
               ),
             ],

@@ -39,6 +39,7 @@ Cards
 	<img src="screenshots/cards/001-cards.png" width="250" alt="Cards page" />
 	<img src="screenshots/cards/002-cards-hide.png" width="250" alt="Hide card's description at cards page" />
 	<img src="screenshots/cards/003-cards-edit.png" width="250" alt="Edit card content at cards page" />
+    <img src="screenshots/cards/004-no-cards.png" width="250" alt="No cards at cards page" />
 </p>
 
 Pairing
@@ -46,6 +47,7 @@ Pairing
 	<img src="screenshots/pairing/001-pairing.png" width="250" alt="Pairing page" />
 	<img src="screenshots/pairing/002-pairing-selection-correct.png" width="250" alt="Selection correct at pairing page" />
 	<img src="screenshots/pairing/003-pairing-selection-incorrect.png" width="250" alt="Selection incorrect at pairing page" />
+    <img src="screenshots/pairing/004-pairing-no-cards.png" width="250" alt="No cards at pairing page" />
 </p>
 
 Selection
@@ -53,6 +55,7 @@ Selection
 	<img src="screenshots/selection/001-selection.png" width="250" alt="Selection page" />
 	<img src="screenshots/selection/002-selection-correct.png" width="250" alt="Selection correct at selection page" />
     <img src="screenshots/selection/003-selection-incorrect.png" width="250" alt="Selection incorrect at selection page" />
+    <img src="screenshots/selection/004-selection-no-cards.png" width="250" alt="No cards at selection page" />
 </p>
 
 Results

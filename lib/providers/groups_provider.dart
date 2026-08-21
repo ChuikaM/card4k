@@ -30,12 +30,15 @@ class GroupsNotifier extends AsyncNotifier<GroupState> {
       return GroupState(null, []);
     }
 
-    var currentGroupName = await repository.getLastUsedGroupName();
-    if(currentGroupName == null) return GroupState(null, []);
-    Group? group = await repository.fetchGroupByName(currentGroupName);
-    if(group == null) return GroupState(null, []);
+    final savedName = await repository.getLastUsedGroupName();
+    final current = (savedName != null && savedName.isNotEmpty)
+        ? allGroups.firstWhere((g) => g.name == savedName, orElse: () => allGroups.first)
+        : allGroups.first;
 
-    return GroupState(group, allGroups);
+    if (savedName == null || savedName.isEmpty || current.name != savedName) {
+      await repository.saveLastUsedGroupName(current.name);
+    }
+    return GroupState(current, allGroups);
   }
 
   Future<void> addGroup(Group group) async {
@@ -64,18 +67,19 @@ class GroupsNotifier extends AsyncNotifier<GroupState> {
     var currentGroupName = await repository.getLastUsedGroupName();
     if(currentGroupName == null) return;
 
-    if(currentGroupName == group.name) {
-      await repository.saveLastUsedGroupName('');
-    }
-
     await repository.removeGroup(group.name);
 
     var groups = await repository.fetchGroups();
     if(groups.isEmpty) {
+      await repository.saveLastUsedGroupName('');
       state = AsyncData(GroupState(null, [])); 
       return;
     }
-    var currentGroup = groups.first;
+    final nameToSelect = (currentGroupName != group.name && groups.any((g) => g.name == currentGroupName))
+        ? currentGroupName
+        : groups.first.name;
+    final currentGroup = groups.firstWhere((g) => g.name == nameToSelect, orElse: () => groups.first);
+    await repository.saveLastUsedGroupName(nameToSelect);
     state = AsyncData(GroupState(currentGroup, groups)); 
   }
   Future<void> selectGroup(String name) async {
@@ -86,8 +90,6 @@ class GroupsNotifier extends AsyncNotifier<GroupState> {
       (g) => g.name == name,
       orElse: () => throw StateError('Group "$name" not found'),
     );
-    print("OldGroupName: $name; NewCurrentGroupName: ${newCurrentGroup.name} ");
-    print("NewCurrentGroupCount: ${newCurrentGroup.getTotalCards()} ");
     await repository.saveLastUsedGroupName(name);
 
     state = AsyncData(state.value!.copyWith(current: newCurrentGroup));
