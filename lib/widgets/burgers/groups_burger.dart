@@ -76,14 +76,14 @@ class GroupsButtons extends ConsumerWidget {
             ),
           ),
           const SizedBox(height: 6),
-          Text(
-            name,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
+          Flexible(
+            child: Text(
+              name.length > 12 ? '${name.substring(0, 12)}...' : name, 
+              style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            )
+          )
         ],
       ),
     );
