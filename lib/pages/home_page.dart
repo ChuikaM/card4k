@@ -104,9 +104,13 @@ class HomeTitle extends ConsumerWidget {
                 radius: 12,
                 backgroundColor: group.color,
               ),
-              Text(
-                group.name, 
-                style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+              Flexible(
+                child: Text(
+                  group.name.length > 12 ? '${group.name.substring(0, 12)}...' : group.name, 
+                  style: TextStyle(color: Colors.white, fontSize: 14, fontWeight: FontWeight.w600),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                )
               )
             ],    
           )
