@@ -142,7 +142,13 @@ class SqliteGroupRepository implements GroupRepository {
 
   @override
   Future<Group?> fetchGroupByName(String name) async {
-    final groupRows = await _database.rawQuery(GroupQueries.getGroup, [name]);
+    List<Map<String, Object?>> groupRows;
+    try {
+      groupRows = await _database.rawQuery(GroupQueries.getGroup, [name]);
+    } catch (e) {
+      developer.log('Failed to fetch group meta by $name from Database: $e');
+      throw DatabaseOperationException(entity: Entity.group, action: DatabaseAction.read, originalError: e);
+    }
     if (groupRows.isEmpty) return null;
 
     List<Map<String, Object?>> cardRows = [];
