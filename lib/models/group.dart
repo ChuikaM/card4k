@@ -15,6 +15,6 @@ class Group {
   int getTotalCards() => cards.length;
 
   @override
-String toString() => 'Group{name: $name, cards_count: ${getTotalCards()}, color: $color}';
+  String toString() => 'Group{name: $name, cards_count: ${getTotalCards()}, color: $color}';
   
 }
