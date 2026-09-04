@@ -1,5 +1,5 @@
 import 'package:card4k/constants/colors.dart';
-import 'package:card4k/providers/sqlite_group_repository.dart';
+import 'package:card4k/providers/sqlite_group_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; 
 

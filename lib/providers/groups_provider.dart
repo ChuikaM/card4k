@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:card4k/providers/sqlite_group_repository.dart';
+import 'package:card4k/providers/sqlite_group_provider.dart';
 import 'package:card4k/models/card.dart';
 import 'package:card4k/models/group.dart';
 

@@ -13,4 +13,8 @@ class Group {
         color = map['color'] != null ? Color(map['color'] as int) : Color(0xFF4CAF50);
 
   int getTotalCards() => cards.length;
+
+  @override
+  String toString() => 'Group{name: $name, cards_count: $getTotalCards(), color: ${color.toString()}}';
+  
 }
