@@ -78,8 +78,8 @@ class SqliteGroupRepository implements GroupRepository {
         GroupQueries.editGroup,
         [newest.name, newest.color.toARGB32(), old.name],
       );
-    } catch(e) {
-      throw Exception('Failed to update group info from $old to $newest');
+    } catch (e, st) {
+      Error.throwWithStackTrace(Exception('Failed to update group info from $old to $newest: $e'), st);
     }
   }
   Future<void> updateGroupCardsInfo(Group old, Group newest) async {
