@@ -1,6 +1,0 @@
-CREATE TABLE IF NOT EXISTS cards (
-    card_id INTEGER PRIMARY KEY AUTOINCREMENT,
-    title TEXT NOT NULL,
-    description TEXT NOT NULL,
-    group_name TEXT NOT NULL
-);

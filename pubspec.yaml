@@ -39,20 +39,6 @@ flutter:
     - assets/icon/next.svg
     - assets/icon/remove.svg
     - assets/icon/edit.svg
-    - assets/sql/card/001_add_card.sql
-    - assets/sql/card/002_remove_card.sql
-    - assets/sql/card/003_edit_card.sql
-    - assets/sql/card/004_get_cards.sql
-    - assets/sql/card/create_table.sql
-    - assets/sql/card/delete_table.sql
-    - assets/sql/group/001_add_group.sql
-    - assets/sql/group/002_edit_group.sql
-    - assets/sql/group/003_get_group.sql
-    - assets/sql/group/004_get_groups.sql
-    - assets/sql/group/005_remove_group.sql
-    - assets/sql/group/create_table.sql
-    - assets/sql/group/delete_table.sql
-    - assets/sql/drop_database.sql
 
 flutter_launcher_icons:
   android: "launcher_icon"

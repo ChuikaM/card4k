@@ -14,4 +14,8 @@ class Card {
 
   @override
   int get hashCode => title.hashCode ^ description.hashCode;
+
+  @override
+  String toString() => 'Card{title: $title, description: $description}';
+  
 }
