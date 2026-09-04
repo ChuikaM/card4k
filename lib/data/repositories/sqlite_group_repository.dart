@@ -89,8 +89,8 @@ class SqliteGroupRepository implements GroupRepository {
           CardQueries.updateCardGroupToNew,
           [newest.name, old.name],
         );
-      } catch(e) {
-        throw Exception('Failed to update group cards info from $old to $newest');
+      } catch (e, st) {
+        Error.throwWithStackTrace(Exception('Failed to update group cards info from $old to $newest: $e'), st);
       }
     }
   }
